@@ -1,0 +1,107 @@
+:root { font-family: system-ui, sans-serif; font-size: 14px; color: #222; }
+html, body { margin: 0; height: 100%; }
+.app { display: flex; height: 100%; position: relative; }
+.panel { width: 340px; overflow-y: auto; padding: 12px 16px; box-sizing: border-box; background: #fafafa; border-right: 1px solid #ddd; }
+/* The map column: the map above the (hidden until used) profile drawer. */
+.map-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.map { flex: 1; min-height: 0; }
+h1 { font-size: 18px; margin: 0 0 4px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: #555; margin: 16px 0 6px; }
+h2 small { text-transform: none; letter-spacing: 0; font-weight: normal; }
+.hint { color: #666; margin: 0; }
+/* The hidden attribute must win over the display of .field, .row, .modes
+   and the like, so that a mode can hide any control. */
+[hidden] { display: none !important; }
+.modes { display: flex; margin: 6px 0 10px; border: 1px solid #1565c0; border-radius: 4px; overflow: hidden; width: fit-content; }
+.modes label { padding: 4px 14px; cursor: pointer; color: #1565c0; background: #fff; font-weight: 600; }
+.modes label:has(input:checked) { background: #1565c0; color: #fff; }
+.modes input { position: absolute; opacity: 0; width: 0; height: 0; }
+.towers { max-height: 220px; overflow-y: auto; border: 1px solid #e5e5e5; border-radius: 4px; padding: 2px 6px; background: #fff; }
+.row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.version { color: #999; font-size: 11px; margin: 16px 0 0; }
+.row small { color: #777; }
+.field { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; gap: 8px; }
+.field input { width: 70px; }
+.status { color: #1565c0; }
+.error { color: #b71c1c; }
+.warn { color: #8a6d00; }
+.muted { color: #888; font-size: 12px; }
+#result p { margin: 4px 0; }
+table { border-collapse: collapse; width: 100%; margin-top: 6px; }
+th, td { text-align: left; padding: 2px 4px; border-bottom: 1px solid #e5e5e5; font-size: 12px; }
+th { color: #555; font-weight: 600; }
+tr.skipped td { color: #999; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.swatch { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; }
+.swatch i { width: 14px; height: 14px; border: 1px solid #999; display: inline-block; }
+.swatch i.nodata { background: repeating-linear-gradient(45deg, #fff, #fff 3px, #ccc 3px, #ccc 6px); }
+.popup { max-width: 320px; max-height: 260px; overflow-y: auto; font-size: 13px; }
+.popup p { margin: 4px 0; }
+.popup .hide { font: inherit; font-size: 12px; padding: 1px 10px; border: 1px solid #bbb; border-radius: 3px; background: #fff; cursor: pointer; }
+/* The point's card and dot hang off a zero-size anchor at the point (see
+   drawPoint in app.js): the card below and to the right, the dot centred.
+   The card is wide enough for its table without a scrollbar. */
+.point-anchor { position: relative; width: 0; height: 0; }
+.point-card { position: absolute; left: 14px; top: 14px; width: max-content; max-width: 600px; max-height: 360px; background: #fff; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); padding: 6px 10px 8px; cursor: move; }
+.point-card .grip { display: flex; justify-content: space-between; align-items: center; margin: 0 0 4px; padding-bottom: 4px; border-bottom: 1px solid #e5e5e5; font-weight: 600; color: #555; font-size: 12px; }
+.point-card table { margin-top: 2px; }
+.point-card td, .point-card th { white-space: nowrap; }
+td small.below { display: block; font-size: 10px; color: #777; line-height: 1.1; }
+.point-dot { position: absolute; left: -7px; top: -7px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid #222; box-shadow: 0 0 3px rgba(0, 0, 0, 0.6); }
+/* The anchor itself is what the browser focuses on a drag; it is a point,
+   so no focus ring is drawn for it. */
+gmp-advanced-marker:has(> .point-anchor):focus { outline: none; }
+.buttons { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.swatch i.pending { background: #fff; border: 2px solid #1565c0; }
+.swatch i.skipped { background: #787878; }
+.swatch i.nlos { background: repeating-linear-gradient(45deg, #2a6f1a 0 1px, #7bd45e 1px 4px); }
+.field span small, .row span small { color: #777; font-weight: normal; }
+td.na { color: #999; }
+
+/* Debug: a toggle at the top right of the display and a pane down the
+   right side with the last request and reply, each in a box that scrolls
+   both ways. The pane can be dragged wider at its bottom-right corner. */
+.debug-toggle { position: absolute; top: 10px; right: 10px; z-index: 5; padding: 5px 12px; font: inherit; font-weight: 600; color: #1565c0; background: #fff; border: 1px solid #1565c0; border-radius: 4px; cursor: pointer; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.debug-toggle[aria-pressed="true"] { background: #1565c0; color: #fff; }
+.debug { width: 460px; min-width: 280px; max-width: 70vw; resize: horizontal; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; background: #fafafa; border-left: 1px solid #ddd; }
+.debug-head { padding: 12px 90px 4px 12px; }
+.debug-head p { margin: 0 0 4px; font-size: 12px; word-break: break-word; }
+.debug-pane { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; padding: 0 12px 10px; }
+.debug-pane h2 { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
+.debug-pane pre { flex: 1 1 0; min-height: 0; overflow: auto; margin: 0; padding: 6px 8px; background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; font: 11.5px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; tab-size: 2; }
+.copy { font: inherit; font-size: 11px; text-transform: none; letter-spacing: 0; padding: 1px 8px; border: 1px solid #bbb; border-radius: 3px; background: #fff; cursor: pointer; }
+
+/* The path profile drawer along the bottom of the map (profile.js): a
+   handle to drag it taller, a title line, the SVG chart filling the rest,
+   a hover readout and a caption. Links in the point tables open it. */
+.drawer { height: 270px; min-height: 140px; max-height: 75vh; position: relative; box-sizing: border-box; display: flex; flex-direction: column; background: #fff; border-top: 1px solid #bbb; padding: 0 12px 6px; }
+.drawer-handle { height: 8px; margin: 0 -12px 2px; cursor: ns-resize; background: linear-gradient(#ddd, #f7f7f7); }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
+.drawer-head p { margin: 2px 0; }
+.drawer-tools { display: flex; align-items: center; gap: 4px; }
+.drawer-tools .muted { margin-right: 6px; }
+.drawer-tools button { font: inherit; font-size: 12px; min-width: 26px; padding: 1px 6px; border: 1px solid #bbb; border-radius: 3px; background: #fff; cursor: pointer; }
+.drawer-tools button:disabled { color: #aaa; cursor: default; }
+.chart { cursor: grab; }
+.chart.dragging { cursor: grabbing; }
+.chart { flex: 1 1 0; min-height: 0; position: relative; overflow: hidden; }
+.chart svg { display: block; }
+.plot-bg { fill: #f3f7fd; }
+.zone { fill: rgba(0, 0, 0, 0.07); }
+.ground { fill: #c8a165; }
+.surface { fill: #9a9a9a; }
+.veg { fill: #58a158; }
+.fresnel { fill: rgba(21, 101, 192, 0.16); stroke: none; }
+.fresnel-clear { fill: none; stroke: #1565c0; stroke-width: 1; stroke-dasharray: 4 3; }
+.ray { stroke: #111; stroke-width: 1.5; }
+.tangent { stroke: #b71c1c; stroke-width: 1; stroke-dasharray: 3 2; }
+.obstacle, .edge { fill: #b71c1c; }
+.tight { fill: #fff; stroke: #e65100; stroke-width: 2; }
+.mast { stroke: #222; stroke-width: 2; }
+.antenna { fill: #1565c0; stroke: #fff; stroke-width: 1; }
+.label { font-size: 11px; fill: #222; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.axis { font-size: 10px; fill: #555; }
+.tick { stroke: #555; }
+.grid { stroke: #e0e0e0; }
+.readout, .caption { margin: 2px 0; font-size: 12px; min-height: 1.2em; }
+button.link { font: inherit; font-size: 12px; color: #1565c0; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }

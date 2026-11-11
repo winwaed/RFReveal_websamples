@@ -1,0 +1,114 @@
+{
+  "map_center": {
+    "lat": 33.9137,
+    "lon": -98.4934
+  },
+  "radio_defaults": {
+    "antenna": "cn-450-micropop-sector-antenna-5g",
+    "frequency_ghz": 5.8,
+    "tilt_deg": -2,
+    "tx_power_dbm": 18,
+    "apclearance": 30,
+    "range": 20
+  },
+  "towers": [
+    {
+      "id": "chase",
+      "name": "Chase",
+      "lat": 33.8664,
+      "lon": -98.53435,
+      "height_rooftop": 6,
+      "radios": [
+        {
+          "azimuth_deg": 45,
+          "name": "NE sector"
+        },
+        {
+          "azimuth_deg": 135,
+          "name": "SE sector"
+        },
+        {
+          "azimuth_deg": 225,
+          "name": "SW sector"
+        },
+        {
+          "azimuth_deg": 315,
+          "name": "NW sector"
+        }
+      ]
+    },
+    {
+      "id": "water-tower",
+      "name": "Water tower",
+      "lat": 33.9201,
+      "lon": -98.5012,
+      "height": 45,
+      "radios": [
+        {
+          "azimuth_deg": 0,
+          "name": "N sector"
+        },
+        {
+          "azimuth_deg": 120,
+          "name": "SE sector"
+        },
+        {
+          "azimuth_deg": 240,
+          "name": "SW sector"
+        }
+      ]
+    },
+    {
+      "id": "northwest",
+      "name": "Northwest mast",
+      "lat": 33.9348,
+      "lon": -98.5179,
+      "height": 35,
+      "radios": [
+        {
+          "azimuth_deg": 45,
+          "name": "NE sector"
+        },
+        {
+          "azimuth_deg": 135,
+          "name": "SE sector"
+        },
+        {
+          "azimuth_deg": 225,
+          "name": "SW sector"
+        },
+        {
+          "azimuth_deg": 315,
+          "name": "NW sector"
+        }
+      ]
+    },
+    {
+      "id": "downtown-60",
+      "name": "Downtown 60 GHz",
+      "lat": 33.916,
+      "lon": -98.4978,
+      "height_rooftop": 4,
+      "radios": [
+        {
+          "azimuth_deg": 60,
+          "name": "ENE 60 GHz",
+          "antenna": "cn-v5000-integrated-sector-60g",
+          "frequency_ghz": 60.48,
+          "tx_power_dbm": 14,
+          "range": 2,
+          "polarization": "vertical"
+        },
+        {
+          "azimuth_deg": 240,
+          "name": "WSW 60 GHz",
+          "antenna": "cn-v5000-integrated-sector-60g",
+          "frequency_ghz": 60.48,
+          "tx_power_dbm": 14,
+          "range": 2,
+          "polarization": "vertical"
+        }
+      ]
+    }
+  ]
+}
