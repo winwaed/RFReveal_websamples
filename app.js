@@ -150,7 +150,7 @@ function loadGoogleMaps(apiKey) {
 
 async function initMap() {
   if (!config.googleMapsApiKey) {
-    show("error", "no Google Maps API key: copy config.example.js to config.js and fill it in");
+    show("error", "no Google Maps API key: put yours in config.local.js (or config.js); see config.js");
     return;
   }
   const gm = await loadGoogleMaps(config.googleMapsApiKey);

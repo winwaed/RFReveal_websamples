@@ -68,7 +68,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.12</p>
+      <p class="version">rfreveal-map sample 0.8.13</p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -115,8 +115,10 @@
 
   <!-- geotiff.js, vendored from npm (licence alongside), decodes the raster. -->
   <script src="vendor/geotiff-2.1.3.js"></script>
-  <!-- Your key and the service address; see config.example.js. -->
+  <!-- Settings (config.js, committed with an empty key), then your own
+       overrides (config.local.js, not committed; optional). -->
   <script src="config.js"></script>
+  <script src="config.local.js" onerror="this.remove()"></script>
   <!-- The modules are fetched with the sample version in their URL, so a
        plain reload after an update gets the current scripts rather than
        a mix of cached old ones (browsers keep ES modules served without
@@ -126,16 +128,16 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.12",
-      "./building.js": "./building.js?v=0.8.12",
-      "./towers.js": "./towers.js?v=0.8.12",
-      "./point.js": "./point.js?v=0.8.12",
-      "./debug.js": "./debug.js?v=0.8.12",
-      "./extent.js": "./extent.js?v=0.8.12",
-      "./profile.js": "./profile.js?v=0.8.12"
+      "./patch.js": "./patch.js?v=0.8.13",
+      "./building.js": "./building.js?v=0.8.13",
+      "./towers.js": "./towers.js?v=0.8.13",
+      "./point.js": "./point.js?v=0.8.13",
+      "./debug.js": "./debug.js?v=0.8.13",
+      "./extent.js": "./extent.js?v=0.8.13",
+      "./profile.js": "./profile.js?v=0.8.13"
     }
   }
   </script>
-  <script type="module" src="app.js?v=0.8.12"></script>
+  <script type="module" src="app.js?v=0.8.13"></script>
 </body>
 </html>

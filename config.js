@@ -1,7 +1,16 @@
-// Copy to config.js and fill in. config.js is read by index.html and holds
-// your own key, so keep it out of version control.
+// Settings for the rfreveal-map demo, read by index.html.
+//
+// GOOGLE MAPS KEY: the demo needs your own Google Maps JavaScript API key.
+// Either put it in googleMapsApiKey below, or (recommended if you use git)
+// put it in config.local.js, which .gitignore keeps out of version control:
+//
+//   Object.assign(window.RFREVEAL_CONFIG, { googleMapsApiKey: "YOUR_KEY" });
+//
+// Never commit a real key. Get one at
+// https://developers.google.com/maps/documentation/javascript/get-api-key
+// and restrict it to your site's address.
 window.RFREVEAL_CONFIG = {
-  // Google Maps JavaScript API key.
+  // Google Maps JavaScript API key: put your own key between the quotes.
   googleMapsApiKey: "",
   // Map ID; advanced markers need one. DEMO_MAP_ID works for development.
   mapId: "DEMO_MAP_ID",

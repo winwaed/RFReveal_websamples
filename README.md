@@ -296,11 +296,18 @@ radio, the gas plus rain specific attenuation in dB/km.
      rfreveald:0.8.5
    ```
 
-2. Put a Google Maps JavaScript API key in `config.js`:
+2. Add your own Google Maps JavaScript API key. `config.js` is committed
+   with an empty key. Put your key in `config.local.js`, which `.gitignore`
+   keeps out of version control and which overrides `config.js`:
 
    ```bash
-   cp config.example.js config.js    # then edit googleMapsApiKey
+   cat > config.local.js <<'EOF'
+   Object.assign(window.RFREVEAL_CONFIG, { googleMapsApiKey: "YOUR_KEY" });
+   EOF
    ```
+
+   Or, if you don't use git, edit `googleMapsApiKey` in `config.js`. Never
+   commit a real key.
 
 3. Serve the directory with any static file server and open it (after
    updating the sample, reload the page with the cache bypassed, for
@@ -368,7 +375,8 @@ and is skipped otherwise.
   compaction scripts.
 - `towers.js`: the three towers (all inside the dataset) and their radios,
   heights in metres and ranges in kilometres.
-- `config.example.js`: key, map ID and service address; copy to `config.js`.
+- `config.js`: map ID, service address, file locations, and an empty key (committed).
+- `config.local.js`: your own key and any other overrides (not committed).
 - `test/`: Node unit tests.
 
 A pixel of the raster is one ground metre; at this latitude that is 1.2
