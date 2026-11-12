@@ -20,7 +20,7 @@
 // way, and its Hide button removes it with the lines; the next right
 // click replaces them.
 
-import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStrongest, rasterToDataURL, signalColor } from "./patch.js";
+import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStrongest, rasterToDataURL, setSignalColourReversed, signalColor } from "./patch.js";
 import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, selectWithin, toFeature } from "./building.js";
 import { loadTowers } from "./towers.js";
 import { buildPointRequest, degrees, fetchPoint, heightText, lineStyle, rgb, towerRows } from "./point.js";
@@ -31,6 +31,9 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 const config = window.RFREVEAL_CONFIG || {};
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
+// The signal colour scale: green strong to red weak, or reversed (red
+// strong to green weak, as cnHeat draws it) when the config says so.
+setSignalColourReversed(config.reverseSignalColours);
 const ON = { background: "#1565c0", border: "#0d47a1" };
 const OFF = { background: "#9e9e9e", border: "#616161" };
 

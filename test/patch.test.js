@@ -16,7 +16,7 @@ const require = createRequire(import.meta.url);
 // Under require() the UMD bundle exports instead of setting the global.
 globalThis.GeoTIFF = require("../vendor/geotiff-2.1.3.js");
 
-const { PATH_LOS, PATH_NLOS, buildRequest, decodeRaster, flagsValid, maskUnder, mercatorToLatLon, mergeStrongest, pathFlags, pixelIndex, rasterToRGBA, signalColor } =
+const { PATH_LOS, PATH_NLOS, buildRequest, decodeRaster, flagsValid, maskUnder, mercatorToLatLon, mergeStrongest, pathFlags, pixelIndex, rasterToRGBA, setSignalColourReversed, signalColor, signalColourReversed } =
   await import("../patch.js");
 const { expandTowers } = await import("../towers.js");
 const TOWERS_DOC = JSON.parse(await readFile(new URL("../towers.json", import.meta.url), "utf8"));
@@ -102,10 +102,29 @@ test("mercatorToLatLon matches PROJ control points", () => {
 });
 
 test("signalColor runs green to red", () => {
+  assert.equal(signalColourReversed(), false, "not reversed by default");
   const [r1, g1] = signalColor(-45);
   const [r2, g2] = signalColor(-100);
   assert.ok(g1 > r1, "strong is green");
   assert.ok(r2 > g2, "weak is red");
+});
+
+test("signalColor reversed runs red to green (the cnHeat order)", () => {
+  const strong = signalColor(-45);
+  const weak = signalColor(-100);
+  const mid = signalColor(-72.5);
+  setSignalColourReversed(true);
+  try {
+    assert.equal(signalColourReversed(), true);
+    assert.deepEqual(signalColor(-45), weak, "strong takes the weak colour");
+    assert.deepEqual(signalColor(-100), strong, "weak takes the strong colour");
+    assert.deepEqual(signalColor(-72.5), mid, "the middle is unchanged");
+    const [r, g] = signalColor(-45);
+    assert.ok(r > g, "strong is red");
+  } finally {
+    setSignalColourReversed(false);
+  }
+  assert.deepEqual(signalColor(-45), strong, "the switch turns back off");
 });
 
 test("rasterToRGBA leaves nodata transparent and scales", () => {

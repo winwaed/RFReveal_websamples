@@ -375,7 +375,9 @@ and is skipped otherwise.
   compaction scripts.
 - `towers.js`: the three towers (all inside the dataset) and their radios,
   heights in metres and ranges in kilometres.
-- `config.js`: map ID, service address, file locations, and an empty key (committed).
+- `config.js`: map ID, service address, file locations, the
+  `reverseSignalColours` switch (red strongest to green weakest, as cnHeat
+  draws it; off by default), and an empty key (committed).
 - `config.local.js`: your own key and any other overrides (not committed).
 - `test/`: Node unit tests.
 

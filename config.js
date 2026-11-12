@@ -23,4 +23,11 @@ window.RFREVEAL_CONFIG = {
   // The building footprints (see building.js for the shape, tools/ for how
   // to make the file from OpenStreetMap). Default: buildings.json.
   buildingsUrl: "buildings.json",
+  // Reverse the signal (RSL) colour scale. Off (false, the default): green
+  // is the strongest signal and red the weakest, at the threshold. On
+  // (true): red is the strongest and green the weakest, the order cnHeat
+  // uses, so its maps and these read alike. Applies to the patch raster,
+  // the building fill when coloured by signal, the point lines and the
+  // key, and the building coverage ramp, which flips with it.
+  reverseSignalColours: false,
 };

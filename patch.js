@@ -246,10 +246,23 @@ export function maskUnder(d, newer) {
 }
 
 // signalColor maps a received level in dBm onto a green (strong) to red
-// (at the threshold) ramp. Returns [r, g, b].
+// (at the threshold) ramp, or red (strong) to green when the scale is
+// reversed (setSignalColourReversed; the config's reverseSignalColours,
+// the order cnHeat uses). Returns [r, g, b].
+let reversed = false;
+
+export function setSignalColourReversed(on) {
+  reversed = Boolean(on);
+}
+
+export function signalColourReversed() {
+  return reversed;
+}
+
 export function signalColor(dbm, { strong = -45, weak = -100 } = {}) {
   let t = (strong - dbm) / (strong - weak); // 0 strong .. 1 weak
   t = Math.min(1, Math.max(0, t));
+  if (reversed) t = 1 - t;
   return hslToRgb(120 * (1 - t), 0.9, 0.45); // hue 120 green .. 0 red
 }
 

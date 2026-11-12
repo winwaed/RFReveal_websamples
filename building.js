@@ -8,7 +8,7 @@
 // [[[lon, lat], ...], ...]: the first ring the outer boundary, the rest
 // holes, every ring closed (last position repeats the first).
 
-import { fetchJSON, pathFlags, signalColor } from "./patch.js";
+import { fetchJSON, pathFlags, signalColor, signalColourReversed } from "./patch.js";
 
 // loadBuildings fetches the file and checks its shape.
 export async function loadBuildings(url = "buildings.json") {
@@ -154,11 +154,13 @@ export function toFeature(b) {
 }
 
 // coverageColor maps a coverage percentage onto the red (none) to green
-// (all) ramp the signal colours use, so the two legends read alike.
-// Returns [r, g, b]; 0 % is grey.
+// (all) ramp the signal colours use, so the two legends read alike; when
+// the signal scale is reversed (config reverseSignalColours) it runs
+// green (none) to red (all) with it. Returns [r, g, b]; 0 % is grey.
 export function coverageColor(pct) {
   if (!(pct > 0)) return [158, 158, 158];
-  const t = Math.min(1, Math.max(0, pct / 100));
+  let t = Math.min(1, Math.max(0, pct / 100));
+  if (signalColourReversed()) t = 1 - t;
   return hslToRgb(120 * t, 0.85, 0.42);
 }
 

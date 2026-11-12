@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 
 const { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, checkBuildings, coverageColor, distanceM, hilbertIndex, mercator, ringCentroid, selectWithin, toFeature } =
   await import("../building.js");
+const { setSignalColourReversed } = await import("../patch.js");
 
 // A square footprint of side m metres (roughly) at (lat, lon).
 function square(id, lat, lon, m = 20, extra = {}) {
@@ -150,6 +151,28 @@ test("colours: coverage runs grey, red to green; signal uses the signal ramp", (
   const [rs, gs] = buildingColor({ combined: { coverage_pct: 40, signal_dbm: -50 } }, { by: "signal" });
   assert.ok(gs > rs, "a strong signal is green");
   assert.deepEqual(buildingColor(null), [120, 120, 120]);
+});
+
+test("colours: the reversed scale flips coverage and signal fills, not the greys", () => {
+  const little = coverageColor(5);
+  const full = coverageColor(100);
+  const normal75 = coverageColor(75);
+  setSignalColourReversed(true);
+  try {
+    assert.deepEqual(coverageColor(0), [158, 158, 158], "no coverage stays grey");
+    const [r1, g1] = coverageColor(5);
+    const [r2, g2] = coverageColor(100);
+    assert.ok(g1 > r1, "little coverage is green");
+    assert.ok(r2 > g2, "full coverage is red");
+    assert.deepEqual(coverageColor(25), normal75, "25 % takes the normal ramp's 75 % colour");
+    const [rs, gs] = buildingColor({ combined: { coverage_pct: 40, signal_dbm: -50 } }, { by: "signal" });
+    assert.ok(rs > gs, "a strong signal is red");
+    assert.deepEqual(buildingColor({ skipped: "no_cells" }), [120, 120, 120]);
+  } finally {
+    setSignalColourReversed(false);
+  }
+  assert.deepEqual(coverageColor(5), little);
+  assert.deepEqual(coverageColor(100), full);
 });
 
 test("bestRadiosPerTower picks one radio per tower", () => {
