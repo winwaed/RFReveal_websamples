@@ -53,6 +53,16 @@ overlap, each map pixel shows the strongest signal of the patches covering
 it, drawn once, so overlapping patches never look stronger than either of
 them.
 
+**Save and diagnostics (sample 0.8.15, service 0.12.0).** Two buttons in
+the Debug pane: **Save request + reply** writes the last exchange as
+`rfreveal-request-<request id>.json` (the request, the reply, the status,
+the timing and the service's request id, which every reply carries as
+`X-Request-Id` and the summary line shows as `id …`); **Diagnostics
+report** downloads the service's report, `GET /api/v1/diagnostics`, a
+zip of its health, configuration, counters and recent log lines whose
+`summary.txt` says what it holds. Both are what to attach to a support
+message.
+
 **Debug pane (sample 0.8.1).** The Debug button at the top right of the
 display opens a pane down the right side showing the last message sent to
 the service and the reply it returned, both pretty printed in boxes that

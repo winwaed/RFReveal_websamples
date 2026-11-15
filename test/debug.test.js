@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { exchangeSummary, formatBytes, formatMs, prettyJSON } = await import("../debug.js");
+const { exchangeSummary, formatBytes, formatMs, prettyJSON, savedExchange, savedExchangeName } = await import("../debug.js");
 
 test("prettyJSON indents by two and shortens only long strings when asked", () => {
   const v = { a: 1, s: "x".repeat(30), nested: { t: "short" } };
@@ -22,6 +22,17 @@ test("exchangeSummary follows an exchange through its states", () => {
   Object.assign(x, { status: 200, bytes: 3 * 1024 * 1024, ms: 1234 });
   assert.equal(exchangeSummary(x), "POST http://h/api/v1/patch · HTTP 200 · 1.2 s · 2.0 KB sent, 3.00 MB received");
   assert.equal(exchangeSummary({ ...x, error: "aborted" }), "POST http://h/api/v1/patch · failed: aborted");
+  assert.equal(exchangeSummary({ ...x, requestId: "abc123def456" }), "POST http://h/api/v1/patch · HTTP 200 · 1.2 s · 2.0 KB sent, 3.00 MB received · id abc123def456");
+});
+
+test("savedExchange is the exchange with its request id, named after it", () => {
+  const now = new Date("2026-11-15T12:34:56Z");
+  const x = { method: "POST", url: "http://h/api/v1/point", request: { a: 1 }, requestBytes: 7, status: 200, reply: { ok: 1 }, bytes: 8, ms: 12.5, error: null, requestId: "abc123def456" };
+  assert.deepEqual(savedExchange(x, { page: "sample t", now }), { saved: "2026-11-15T12:34:56.000Z", page: "sample t", method: "POST", url: "http://h/api/v1/point",
+    status: 200, ms: 12.5, request_id: "abc123def456", error: null, request: { a: 1 }, reply: { ok: 1 } });
+  assert.equal(savedExchangeName(x, now), "rfreveal-request-abc123def456.json");
+  assert.equal(savedExchangeName({ ...x, requestId: null }, now), "rfreveal-request-20261115T123456.json");
+  assert.equal(savedExchange(null), null);
 });
 
 test("formatMs and formatBytes pick units", () => {
@@ -44,12 +55,14 @@ test("fetchJSON traces the request, the reply and failures", async () => {
     globalThis.fetch = async (url, init) => {
       assert.equal(url, "http://h/api/v1/patch");
       assert.equal(init.method, "POST");
-      return { ok: true, status: 200, statusText: "OK", text: async () => '{"status":"ok"}' };
+      return { ok: true, status: 200, statusText: "OK", text: async () => '{"status":"ok"}', headers: new Map([["X-Request-Id", "abc123def456"]]) };
     };
     const reply = await fetchJSON("http://h", "/api/v1/patch", { radius: 50 }, { trace });
     assert.deepEqual(reply, { status: "ok" });
     assert.equal(seen.length, 2);
     assert.equal(seen[0].status, null);
+    assert.equal(seen[0].requestId, null);
+    assert.equal(seen[1].requestId, "abc123def456");
     assert.deepEqual(seen[0].request, { radius: 50 });
     assert.equal(seen[0].requestBytes, '{"radius":50}'.length);
     assert.equal(seen[1].status, 200);

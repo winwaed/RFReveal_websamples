@@ -59,7 +59,7 @@ export async function fetchJSON(base, path, request, { signal, trace, method = "
   const url = `${base}${path}`;
   const payload = method === "GET" ? "" : JSON.stringify(request);
   const started = performance.now();
-  const x = { method, url, request, requestBytes: payload.length, status: null, reply: null, bytes: null, ms: null, error: null };
+  const x = { method, url, request, requestBytes: payload.length, status: null, reply: null, bytes: null, ms: null, error: null, requestId: null };
   trace?.(x);
   let res;
   try {
@@ -86,6 +86,7 @@ export async function fetchJSON(base, path, request, { signal, trace, method = "
   }
   x.status = res.status;
   x.reply = body;
+  x.requestId = res.headers?.get?.("X-Request-Id") ?? null; // the service's id for this exchange (rfreveald 0.12.0)
   x.ms = performance.now() - started;
   trace?.(x);
   if (!res.ok) {

@@ -66,6 +66,7 @@ td.na { color: #999; }
 .debug { width: 460px; min-width: 280px; max-width: 70vw; resize: horizontal; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; background: #fafafa; border-left: 1px solid #ddd; }
 .debug-head { padding: 12px 90px 4px 12px; }
 .debug-head p { margin: 0 0 4px; font-size: 12px; word-break: break-word; }
+.debug-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .debug-pane { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; padding: 0 12px 10px; }
 .debug-pane h2 { display: flex; align-items: center; gap: 8px; margin: 8px 0 4px; }
 .debug-pane pre { flex: 1 1 0; min-height: 0; overflow: auto; margin: 0; padding: 6px 8px; background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; font: 11.5px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; tab-size: 2; }

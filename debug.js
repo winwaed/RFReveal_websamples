@@ -24,7 +24,24 @@ export function exchangeSummary(x) {
   const route = `${x.method} ${x.url}`;
   if (x.error) return `${route} · failed: ${x.error}`;
   if (x.status == null) return `${route} · ${formatBytes(x.requestBytes)} sent, waiting for the reply…`;
-  return `${route} · HTTP ${x.status} · ${formatMs(x.ms)} · ${formatBytes(x.requestBytes)} sent, ${formatBytes(x.bytes)} received`;
+  const id = x.requestId ? ` · id ${x.requestId}` : "";
+  return `${route} · HTTP ${x.status} · ${formatMs(x.ms)} · ${formatBytes(x.requestBytes)} sent, ${formatBytes(x.bytes)} received${id}`;
+}
+
+// savedExchange is the file "Save" writes: the exchange as traced (request,
+// reply, status, timing, the service's request id) with when and where it
+// was saved, so it can be attached to a support report and replayed. The
+// raster is left in: it is what the service sent.
+export function savedExchange(x, { page = "rfreveal-map", now = new Date() } = {}) {
+  if (!x) return null;
+  return { saved: now.toISOString(), page, method: x.method, url: x.url, status: x.status, ms: x.ms,
+    request_id: x.requestId ?? null, error: x.error ?? null, request: x.request, reply: x.reply };
+}
+
+// savedExchangeName is the file name for a saved exchange.
+export function savedExchangeName(x, now = new Date()) {
+  const stamp = now.toISOString().replace(/[-:]/g, "").slice(0, 15);
+  return `rfreveal-request-${x?.requestId || stamp}.json`;
 }
 
 export function formatMs(ms) {

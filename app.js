@@ -24,11 +24,13 @@ import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStr
 import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, selectWithin, toFeature } from "./building.js";
 import { loadTowers } from "./towers.js";
 import { buildPointRequest, degrees, fetchPoint, heightText, lineStyle, rgb, towerRows } from "./point.js";
-import { exchangeSummary, prettyJSON } from "./debug.js";
+import { exchangeSummary, prettyJSON, savedExchange, savedExchangeName } from "./debug.js";
 import { binAt, buildProfileRequest, chartLayout, chartSVG, covers as viewCovered, fetchProfile, fetchWindow, panRange, profileCaption, profileTitle, readout, unitLabel, viewOf, zoomRange } from "./profile.js";
 import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
+// SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.15";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
 // The signal colour scale: green strong to red weak, or reversed (red
@@ -1253,6 +1255,55 @@ async function copyJSON(side, button) {
   }
 }
 
+// saveFile hands the browser a file to download.
+function saveFile(name, blob) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// saveExchange writes the last request and reply to a file, with the
+// service's request id, to attach to a support report (service 0.12.0).
+function saveExchange(button) {
+  const x = lastExchange;
+  if (!x) return;
+  const now = new Date();
+  saveFile(savedExchangeName(x, now), new Blob([JSON.stringify(savedExchange(x, { page: SAMPLE_VERSION, now }), null, 2)], { type: "application/json" }));
+  flash(button, "Saved");
+}
+
+// downloadDiagnostics fetches the service's diagnostics report, a zip of
+// its health, configuration, counters and recent log lines, and saves it
+// (service 0.12.0, GET /api/v1/diagnostics). The service names the file.
+async function downloadDiagnostics(button) {
+  const label = button.textContent;
+  button.textContent = "Fetching…";
+  button.disabled = true;
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/diagnostics`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const name = /filename="?([^";]+)"?/.exec(res.headers.get("Content-Disposition") || "")?.[1] || "rfreveal-diagnostics.zip";
+    saveFile(name, await res.blob());
+    button.textContent = "Saved";
+  } catch (e) {
+    button.textContent = "Failed";
+    show("error", `diagnostics: ${e.message} (is the service running, and started with -cors-origin for this page?)`);
+  } finally {
+    button.disabled = false;
+    setTimeout(() => (button.textContent = label), 1500);
+  }
+}
+
+function flash(button, text) {
+  const label = button.textContent;
+  button.textContent = text;
+  setTimeout(() => (button.textContent = label), 1200);
+}
+
 // --- start ---
 
 async function start() {
@@ -1261,6 +1312,8 @@ async function start() {
   $("debugShorten").addEventListener("change", renderDebug);
   $("copyRequest").addEventListener("click", (ev) => copyJSON("request", ev.currentTarget));
   $("copyReply").addEventListener("click", (ev) => copyJSON("reply", ev.currentTarget));
+  $("saveExchange").addEventListener("click", (ev) => saveExchange(ev.currentTarget));
+  $("diagnostics").addEventListener("click", (ev) => downloadDiagnostics(ev.currentTarget));
   for (const r of document.querySelectorAll("input[name=mode]")) r.addEventListener("change", () => r.checked && setMode(r.value));
   $("minSignalDbm").addEventListener("change", () => {
     renderLegend();

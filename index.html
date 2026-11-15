@@ -68,7 +68,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.14</p>
+      <p class="version">rfreveal-map sample 0.8.15</p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -100,6 +100,10 @@
       <div class="debug-head">
         <p id="debugSummary" class="muted">No request sent yet.</p>
         <label class="row"><input id="debugShorten" type="checkbox" checked> <small>shorten long strings (the base64 raster)</small></label>
+        <p class="debug-actions">
+          <button id="saveExchange" type="button" class="copy" title="Save the last request and reply, with the service's request id, as a file to attach to a support report">Save request + reply</button>
+          <button id="diagnostics" type="button" class="copy" title="Download the service's diagnostics report (health, configuration, counters, recent log lines) as a zip for support">Diagnostics report</button>
+        </p>
       </div>
       <section class="debug-pane">
         <h2>Sent <button id="copyRequest" type="button" class="copy">Copy</button></h2>
@@ -128,16 +132,16 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.14",
-      "./building.js": "./building.js?v=0.8.14",
-      "./towers.js": "./towers.js?v=0.8.14",
-      "./point.js": "./point.js?v=0.8.14",
-      "./debug.js": "./debug.js?v=0.8.14",
-      "./extent.js": "./extent.js?v=0.8.14",
-      "./profile.js": "./profile.js?v=0.8.14"
+      "./patch.js": "./patch.js?v=0.8.15",
+      "./building.js": "./building.js?v=0.8.15",
+      "./towers.js": "./towers.js?v=0.8.15",
+      "./point.js": "./point.js?v=0.8.15",
+      "./debug.js": "./debug.js?v=0.8.15",
+      "./extent.js": "./extent.js?v=0.8.15",
+      "./profile.js": "./profile.js?v=0.8.15"
     }
   }
   </script>
-  <script type="module" src="app.js?v=0.8.14"></script>
+  <script type="module" src="app.js?v=0.8.15"></script>
 </body>
 </html>
