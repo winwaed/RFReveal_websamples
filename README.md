@@ -319,6 +319,14 @@ radio, the gas plus rain specific attenuation in dB/km.
    Or, if you don't use git, edit `googleMapsApiKey` in `config.js`. Never
    commit a real key.
 
+   The map is Google's, not part of this project: whoever deploys the page
+   needs their own key from the Google Cloud console, and by using it
+   accepts the [Google Maps Platform Terms of
+   Service](https://cloud.google.com/maps-platform/terms) and its billing
+   (the Maps JavaScript API has a free monthly allowance; restrict the key
+   to your site's address). This project's BSD-3-Clause licence grants no
+   rights to Google Maps.
+
 3. Serve the directory with any static file server and open it (after
    updating the sample, reload the page with the cache bypassed, for
    example Ctrl+Shift+R, so the browser does not keep the old scripts; the
