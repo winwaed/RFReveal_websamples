@@ -30,7 +30,7 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
 // SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
-const SAMPLE_VERSION = "rfreveal-map sample 0.8.16";
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.17";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
 // The signal colour scale: green strong to red weak, or reversed (red
@@ -61,7 +61,6 @@ let windowRect = null; // the google.maps.Rectangle showing the drawn window
 let windowBounds = null; // the window as { south, west, north, east }, once drawn
 let windowDrag = null; // the drag in progress: { start: { lat, lon }, previous: windowBounds before it }
 let mouseLatLng = null; // where the mouse last was over the map (the map's mousemove event)
-let windowJustDrawn = false; // the mouseup that ended a drag is followed by a click: not a building popup
 let point = null; // the right-click query on the map: { card, dot, lines, request, reply } until hidden or replaced
 let pointInFlight = null; // AbortController of the running point request
 let extentMask = null; // the Polygon greying out everything outside the elevation dataset
@@ -207,15 +206,14 @@ async function initMap() {
   // Building footprints live on the Data layer; a click on one is a
   // building popup, not a patch.
   map.data.setStyle(styleBuilding);
-  map.data.addListener("click", (ev) => {
-    if (!windowJustDrawn) openBuildingPopup(ev.feature);
-  });
-  // The window selection: the left button dragged across the map draws a
-  // rectangle. The map's own mousemove events (and the Data layer's, which
-  // take over above a footprint) give the position in degrees; the DOM
-  // mousedown and mouseup on the map say when the button goes down and up,
-  // because the Map has no such events. Panning is off while the window
-  // selection is active (applySelection), so the drag is free.
+  map.data.addListener("click", (ev) => openBuildingPopup(ev.feature));
+  // The window selection: the middle button dragged across the map draws
+  // a rectangle, so the left button still pans and the right button still
+  // queries a point. The map's own mousemove events (and the Data layer's,
+  // which take over above a footprint) give the position in degrees; the
+  // DOM mousedown and mouseup on the map say when the button goes down and
+  // up, because the Map has no such events. preventDefault on the
+  // mousedown stops the browser's middle-button autoscroll.
   const track = (ev) => {
     mouseLatLng = ev.latLng;
     if (windowDrag) windowDragTo(ev.latLng);
@@ -223,13 +221,13 @@ async function initMap() {
   map.addListener("mousemove", track);
   map.data.addListener("mousemove", track);
   $("map").addEventListener("mousedown", (ev) => {
-    if (ev.button !== 0 || !windowing() || !mouseLatLng) return;
+    if (ev.button !== 1 || !windowing() || !mouseLatLng) return;
     ev.preventDefault();
     windowDrag = { start: { lat: mouseLatLng.lat(), lon: mouseLatLng.lng() }, previous: windowBounds };
     windowDragTo(mouseLatLng);
   });
   window.addEventListener("mouseup", (ev) => {
-    if (ev.button !== 0 || !windowDrag) return;
+    if (ev.button !== 1 || !windowDrag) return;
     windowDragEnd();
   });
   applyMode();
@@ -258,8 +256,6 @@ function windowDragTo(latLng) {
 function windowDragEnd() {
   const drag = windowDrag;
   windowDrag = null;
-  windowJustDrawn = true;
-  setTimeout(() => (windowJustDrawn = false), 0);
   if (windowBounds.south === windowBounds.north || windowBounds.west === windowBounds.east) {
     windowBounds = drag.previous;
     if (windowBounds) windowRect.setBounds(windowBounds);
@@ -276,18 +272,14 @@ function windowInfo() {
   show("windowInfo", `window ${(width / 1000).toFixed(2)} × ${(height / 1000).toFixed(2)} km: ${n} building${n === 1 ? "" : "s"}`);
 }
 
-// applySelection shows the controls of the chosen selection, stops the map
-// panning while a window can be drawn (the left button draws instead) and
-// shows the drawn window only then.
+// applySelection shows the controls of the chosen selection and the drawn
+// window only while a window can be drawn.
 function applySelection() {
   selectBy = $("buildingSelect").value;
-  const w = windowing();
   $("buildingRadiusField").hidden = selectBy === "window";
   $("windowHint").hidden = selectBy !== "window";
   $("windowInfo").hidden = selectBy !== "window" || !windowBounds;
-  if (!map) return;
-  map.setOptions({ draggable: !w, draggableCursor: w ? "crosshair" : null, draggingCursor: w ? "crosshair" : null });
-  if (windowRect) windowRect.setMap(w && windowBounds ? map : null);
+  if (map && windowRect) windowRect.setMap(windowing() && windowBounds ? map : null);
 }
 
 // --- modes ---
@@ -1144,7 +1136,7 @@ async function evaluateBuildings() {
   if (!(opts.aboveSurface > 0)) return show("buildingError", "set the receiver height above the rooftop: buildings are evaluated at that height");
   const byWindow = opts.buildingSelect === "window";
   if (!byWindow && !(opts.buildingRadius > 0)) return show("buildingError", "the radius must be positive");
-  if (byWindow && !windowBounds) return show("buildingError", "draw a window first: hold the left mouse button and drag on the map");
+  if (byWindow && !windowBounds) return show("buildingError", "draw a window first: hold the middle mouse button and drag on the map");
   if (!checkFlags(opts, "buildingError")) return;
   const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, opts.buildingRadius);
   if (selected.length === 0) return show("buildingError", byWindow ? "no buildings in the window" : `no buildings within ${opts.buildingRadius} m of the ticked towers`);

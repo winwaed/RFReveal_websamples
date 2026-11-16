@@ -211,14 +211,15 @@ roof it stands on or its own tower, never block it.
 The Buildings mode evaluates building footprints instead of patches; map
 clicks do not start patches in this mode. Evaluate buildings takes every building of `buildings.json` whose centroid
 lies within the radius (default 1000 m) of any ticked tower, or (sample
-0.8.16) inside a **window** drawn on the map: the Select field chooses
-between the two. With the window selection the map stops panning and the
-cursor is a crosshair; hold the left mouse button and drag to draw the
-window, which stays on the map (a new drag replaces it, a plain click
-leaves it) with its size and building count under the field, and Evaluate
-buildings sends every building whose centroid is inside it, however many,
-to the ticked towers. Clear buildings keeps the window; switching the
-selection back to the radius hides it and lets the map pan again. The
+0.8.17) inside a **window** drawn on the map: the Select field chooses
+between the two. With the window selection, hold the **middle** mouse
+button (the wheel) and drag to draw the window, so the left button still
+pans the map and the right button still queries a point; the window stays
+on the map (a new drag replaces it, a plain middle click leaves it) with
+its size and building count under the field, and Evaluate buildings sends
+every building whose centroid is inside it, however many, to the ticked
+towers. Clear buildings keeps the window; switching the selection back to
+the radius hides it. The
 selected buildings are drawn as
 outlines on the map's Data layer, and sent to `POST /api/v1/building`
 in batches of 300 neighbours (400 before 0.8.0; the NLOS walk made the largest batch run close to the 120 s deadline) (grouped by 200 m squares, ordered along a

@@ -48,7 +48,7 @@
           <option value="window">in a window drawn on the map</option>
         </select></label>
         <label class="field" id="buildingRadiusField"><span>Radius around towers (m)</span><input id="buildingRadius" type="number" value="1000" min="50" max="3000" step="50"></label>
-        <p class="hint" id="windowHint" hidden>Hold the left mouse button and drag on the map to draw the window; the map does not pan while this is selected, and a new drag replaces the window. Evaluate buildings sends every building whose centre is inside it to the ticked towers.</p>
+        <p class="hint" id="windowHint" hidden>Hold the middle mouse button (the wheel) and drag on the map to draw the window; the left button still pans and the right button still queries a point, and a new drag replaces the window. Evaluate buildings sends every building whose centre is inside it to the ticked towers.</p>
         <p id="windowInfo" class="status" hidden></p>
         <label class="field"><span>Colour by</span><select id="colourBy">
           <option value="coverage" selected>coverage %</option>
@@ -74,7 +74,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.16</p>
+      <p class="version">rfreveal-map sample 0.8.17</p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -138,16 +138,16 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.16",
-      "./building.js": "./building.js?v=0.8.16",
-      "./towers.js": "./towers.js?v=0.8.16",
-      "./point.js": "./point.js?v=0.8.16",
-      "./debug.js": "./debug.js?v=0.8.16",
-      "./extent.js": "./extent.js?v=0.8.16",
-      "./profile.js": "./profile.js?v=0.8.16"
+      "./patch.js": "./patch.js?v=0.8.17",
+      "./building.js": "./building.js?v=0.8.17",
+      "./towers.js": "./towers.js?v=0.8.17",
+      "./point.js": "./point.js?v=0.8.17",
+      "./debug.js": "./debug.js?v=0.8.17",
+      "./extent.js": "./extent.js?v=0.8.17",
+      "./profile.js": "./profile.js?v=0.8.17"
     }
   }
   </script>
-  <script type="module" src="app.js?v=0.8.16"></script>
+  <script type="module" src="app.js?v=0.8.17"></script>
 </body>
 </html>
