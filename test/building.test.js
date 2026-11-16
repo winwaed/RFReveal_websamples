@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, checkBuildings, coverageColor, distanceM, hilbertIndex, mercator, ringCentroid, selectWithin, toFeature } =
+const { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, checkBuildings, coverageColor, distanceM, hilbertIndex, mercator, normaliseWindow, ringCentroid, selectInWindow, selectWithin, toFeature, windowSizeM } =
   await import("../building.js");
 const { setSignalColourReversed } = await import("../patch.js");
 
@@ -194,4 +194,15 @@ test("bestRadiosPerTower picks one radio per tower", () => {
   assert.equal(rows[0].tower.id, "a");
   assert.equal(rows[0].radio.radio, "a2");
   assert.equal(rows[0].radio.name, "S");
+});
+
+test("normaliseWindow, selectInWindow and windowSizeM", () => {
+  const w = normaliseWindow({ lat: 33.95, lon: -98.50 }, { lat: 33.90, lon: -98.55 });
+  assert.deepEqual(w, { south: 33.9, north: 33.95, west: -98.55, east: -98.5 });
+  const mk = (id, lat, lon) => ({ id, centroid: { lat, lon } });
+  const b = [mk("in", 33.92, -98.52), mk("edge", 33.95, -98.55), mk("north", 33.951, -98.52), mk("east", 33.92, -98.49)];
+  assert.deepEqual(selectInWindow(b, w).map((x) => x.id), ["in", "edge"]);
+  const size = windowSizeM(w);
+  assert.ok(Math.abs(size.height - 5560) < 30, `height ${size.height}`);
+  assert.ok(Math.abs(size.width - 4612) < 30, `width ${size.width}`);
 });

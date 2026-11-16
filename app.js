@@ -21,7 +21,7 @@
 // click replaces them.
 
 import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStrongest, rasterToDataURL, setSignalColourReversed, signalColor } from "./patch.js";
-import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, selectWithin, toFeature } from "./building.js";
+import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, normaliseWindow, selectInWindow, selectWithin, toFeature, windowSizeM } from "./building.js";
 import { loadTowers } from "./towers.js";
 import { buildPointRequest, degrees, fetchPoint, heightText, lineStyle, rgb, towerRows } from "./point.js";
 import { exchangeSummary, prettyJSON, savedExchange, savedExchangeName } from "./debug.js";
@@ -30,7 +30,7 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
 // SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
-const SAMPLE_VERSION = "rfreveal-map sample 0.8.15";
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.16";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
 // The signal colour scale: green strong to red weak, or reversed (red
@@ -56,6 +56,12 @@ const buildingResults = new Map(); // building id -> { result, reply } once eval
 let buildingRun = null; // AbortController of the running batch sequence
 const BATCH = 300; // buildings per request (nlos-plan.md 7.4: a batch of 400 with NLOS ran close to the 120 s deadline)
 let mode = "patch"; // "patch" or "buildings": which controls, overlays and key show
+let selectBy = "radius"; // buildings mode: "radius" around the ticked towers, or a "window" drawn on the map
+let windowRect = null; // the google.maps.Rectangle showing the drawn window
+let windowBounds = null; // the window as { south, west, north, east }, once drawn
+let windowDrag = null; // the drag in progress: { start: { lat, lon }, previous: windowBounds before it }
+let mouseLatLng = null; // where the mouse last was over the map (the map's mousemove event)
+let windowJustDrawn = false; // the mouseup that ended a drag is followed by a click: not a building popup
 let point = null; // the right-click query on the map: { card, dot, lines, request, reply } until hidden or replaced
 let pointInFlight = null; // AbortController of the running point request
 let extentMask = null; // the Polygon greying out everything outside the elevation dataset
@@ -79,6 +85,7 @@ function options() {
     enableNLOS: $("enableNLOS").checked,
     rxClearance: Number($("rxClearance").value),
     buildingRadius: Number($("buildingRadius").value),
+    buildingSelect: $("buildingSelect").value,
     colourBy: $("colourBy").value,
   };
 }
@@ -200,8 +207,87 @@ async function initMap() {
   // Building footprints live on the Data layer; a click on one is a
   // building popup, not a patch.
   map.data.setStyle(styleBuilding);
-  map.data.addListener("click", (ev) => openBuildingPopup(ev.feature));
+  map.data.addListener("click", (ev) => {
+    if (!windowJustDrawn) openBuildingPopup(ev.feature);
+  });
+  // The window selection: the left button dragged across the map draws a
+  // rectangle. The map's own mousemove events (and the Data layer's, which
+  // take over above a footprint) give the position in degrees; the DOM
+  // mousedown and mouseup on the map say when the button goes down and up,
+  // because the Map has no such events. Panning is off while the window
+  // selection is active (applySelection), so the drag is free.
+  const track = (ev) => {
+    mouseLatLng = ev.latLng;
+    if (windowDrag) windowDragTo(ev.latLng);
+  };
+  map.addListener("mousemove", track);
+  map.data.addListener("mousemove", track);
+  $("map").addEventListener("mousedown", (ev) => {
+    if (ev.button !== 0 || !windowing() || !mouseLatLng) return;
+    ev.preventDefault();
+    windowDrag = { start: { lat: mouseLatLng.lat(), lon: mouseLatLng.lng() }, previous: windowBounds };
+    windowDragTo(mouseLatLng);
+  });
+  window.addEventListener("mouseup", (ev) => {
+    if (ev.button !== 0 || !windowDrag) return;
+    windowDragEnd();
+  });
   applyMode();
+}
+
+// --- the window selection ---
+
+function windowing() {
+  return mode === "buildings" && selectBy === "window";
+}
+
+// windowDragTo stretches the window from the drag's start to the position.
+function windowDragTo(latLng) {
+  const gm = window.google.maps;
+  windowBounds = normaliseWindow(windowDrag.start, { lat: latLng.lat(), lon: latLng.lng() });
+  if (!windowRect) {
+    windowRect = new gm.Rectangle({ map, clickable: false, strokeColor: "#fff", strokeOpacity: 0.9, strokeWeight: 2, fillColor: "#1565c0", fillOpacity: 0.08, zIndex: 50 });
+  }
+  windowRect.setBounds(windowBounds);
+  windowRect.setMap(map);
+  windowInfo();
+}
+
+// windowDragEnd keeps the window if it has any size, otherwise the drag was
+// a click and the earlier window (if any) stays.
+function windowDragEnd() {
+  const drag = windowDrag;
+  windowDrag = null;
+  windowJustDrawn = true;
+  setTimeout(() => (windowJustDrawn = false), 0);
+  if (windowBounds.south === windowBounds.north || windowBounds.west === windowBounds.east) {
+    windowBounds = drag.previous;
+    if (windowBounds) windowRect.setBounds(windowBounds);
+    else windowRect.setMap(null);
+    windowInfo();
+  }
+}
+
+// windowInfo writes the window's size and how many buildings it holds.
+function windowInfo() {
+  if (!windowBounds) return show("windowInfo", "");
+  const { width, height } = windowSizeM(windowBounds);
+  const n = selectInWindow(BUILDINGS, windowBounds).length;
+  show("windowInfo", `window ${(width / 1000).toFixed(2)} × ${(height / 1000).toFixed(2)} km: ${n} building${n === 1 ? "" : "s"}`);
+}
+
+// applySelection shows the controls of the chosen selection, stops the map
+// panning while a window can be drawn (the left button draws instead) and
+// shows the drawn window only then.
+function applySelection() {
+  selectBy = $("buildingSelect").value;
+  const w = windowing();
+  $("buildingRadiusField").hidden = selectBy === "window";
+  $("windowHint").hidden = selectBy !== "window";
+  $("windowInfo").hidden = selectBy !== "window" || !windowBounds;
+  if (!map) return;
+  map.setOptions({ draggable: !w, draggableCursor: w ? "crosshair" : null, draggingCursor: w ? "crosshair" : null });
+  if (windowRect) windowRect.setMap(w && windowBounds ? map : null);
 }
 
 // --- modes ---
@@ -226,6 +312,7 @@ function applyMode() {
     if (clickMarker) clickMarker.map = mode === "patch" ? map : null;
     map.data.setMap(mode === "buildings" ? map : null);
   }
+  applySelection();
   renderLegend();
 }
 
@@ -1046,19 +1133,21 @@ function mapHasBuildings() {
 }
 
 // evaluateBuildings selects the footprints within the radius of the
-// ticked towers, draws them as outlines and sends them to the service in
-// batches of neighbours, one request at a time, filling each building as
-// its reply arrives.
+// ticked towers, or inside the drawn window, draws them as outlines and
+// sends them to the service in batches of neighbours, one request at a
+// time, filling each building as its reply arrives.
 async function evaluateBuildings() {
   const towers = TOWERS.filter((t) => enabled.has(t.id));
   const opts = options();
   show("buildingError", "");
   if (towers.length === 0) return show("buildingError", "enable at least one tower");
   if (!(opts.aboveSurface > 0)) return show("buildingError", "set the receiver height above the rooftop: buildings are evaluated at that height");
-  if (!(opts.buildingRadius > 0)) return show("buildingError", "the radius must be positive");
+  const byWindow = opts.buildingSelect === "window";
+  if (!byWindow && !(opts.buildingRadius > 0)) return show("buildingError", "the radius must be positive");
+  if (byWindow && !windowBounds) return show("buildingError", "draw a window first: hold the left mouse button and drag on the map");
   if (!checkFlags(opts, "buildingError")) return;
-  const selected = selectWithin(BUILDINGS, towers, opts.buildingRadius);
-  if (selected.length === 0) return show("buildingError", `no buildings within ${opts.buildingRadius} m of the ticked towers`);
+  const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, opts.buildingRadius);
+  if (selected.length === 0) return show("buildingError", byWindow ? "no buildings in the window" : `no buildings within ${opts.buildingRadius} m of the ticked towers`);
   clearBuildings();
   const ctl = new AbortController();
   buildingRun = ctl;
@@ -1331,6 +1420,7 @@ async function start() {
   $("clear").addEventListener("click", clearRasters);
   wireProfile();
   $("evaluateBuildings").addEventListener("click", evaluateBuildings);
+  $("buildingSelect").addEventListener("change", applySelection);
   $("stopBuildings").addEventListener("click", stopBuildings);
   $("clearBuildings").addEventListener("click", clearBuildings);
   const loaded = await loadTowers(config.towersUrl || "towers.json");
@@ -1344,6 +1434,7 @@ async function start() {
   try {
     BUILDINGS = await loadBuildings(config.buildingsUrl || "buildings.json");
     $("buildingCount").textContent = `(${BUILDINGS.length} from ${config.buildingsUrl || "buildings.json"})`;
+    windowInfo();
   } catch (e) {
     $("buildingCount").textContent = "(none)";
     show("buildingError", `${e.message}; run tools/fetch-osm-buildings.sh and tools/compact-buildings.py (see README)`);

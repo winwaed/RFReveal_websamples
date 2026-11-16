@@ -15,7 +15,7 @@
         <label><input type="radio" name="mode" value="buildings"> Buildings</label>
       </div>
       <p class="hint" data-mode="patch">Click the map to evaluate a patch at that point using the ticked towers. The result opens in a popup at the point, and each patch's raster stays on the map with a circle at the patch radius.</p>
-      <p class="hint" data-mode="buildings">Evaluate buildings colours every building footprint within the radius of the ticked towers by its coverage; click a building for its figures.</p>
+      <p class="hint" data-mode="buildings">Evaluate buildings colours every building footprint around the ticked towers, or inside a window you draw, by its coverage; click a building for its figures.</p>
       <p class="hint">Right-click anywhere for the signal from each ticked tower to that point and the bearing to it: lines are drawn to the towers and a card lists the figures. Drag the card out of the way; its Hide button or the next right-click removes it.</p>
       <p class="hint" id="extent">Loading the elevation extent…</p>
       <p data-mode="patch"><button id="clear" type="button" disabled>Clear rasters</button></p>
@@ -43,7 +43,13 @@
 
       <section data-mode="buildings">
         <h2>Buildings <small id="buildingCount"></small></h2>
-        <label class="field"><span>Radius around towers (m)</span><input id="buildingRadius" type="number" value="1000" min="50" max="3000" step="50"></label>
+        <label class="field"><span>Select</span><select id="buildingSelect">
+          <option value="radius" selected>around the ticked towers</option>
+          <option value="window">in a window drawn on the map</option>
+        </select></label>
+        <label class="field" id="buildingRadiusField"><span>Radius around towers (m)</span><input id="buildingRadius" type="number" value="1000" min="50" max="3000" step="50"></label>
+        <p class="hint" id="windowHint" hidden>Hold the left mouse button and drag on the map to draw the window; the map does not pan while this is selected, and a new drag replaces the window. Evaluate buildings sends every building whose centre is inside it to the ticked towers.</p>
+        <p id="windowInfo" class="status" hidden></p>
         <label class="field"><span>Colour by</span><select id="colourBy">
           <option value="coverage" selected>coverage %</option>
           <option value="signal">3rd strongest cell (dBm)</option>
@@ -68,7 +74,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.15</p>
+      <p class="version">rfreveal-map sample 0.8.16</p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -132,16 +138,16 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.15",
-      "./building.js": "./building.js?v=0.8.15",
-      "./towers.js": "./towers.js?v=0.8.15",
-      "./point.js": "./point.js?v=0.8.15",
-      "./debug.js": "./debug.js?v=0.8.15",
-      "./extent.js": "./extent.js?v=0.8.15",
-      "./profile.js": "./profile.js?v=0.8.15"
+      "./patch.js": "./patch.js?v=0.8.16",
+      "./building.js": "./building.js?v=0.8.16",
+      "./towers.js": "./towers.js?v=0.8.16",
+      "./point.js": "./point.js?v=0.8.16",
+      "./debug.js": "./debug.js?v=0.8.16",
+      "./extent.js": "./extent.js?v=0.8.16",
+      "./profile.js": "./profile.js?v=0.8.16"
     }
   }
   </script>
-  <script type="module" src="app.js?v=0.8.15"></script>
+  <script type="module" src="app.js?v=0.8.16"></script>
 </body>
 </html>

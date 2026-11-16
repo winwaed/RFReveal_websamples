@@ -68,6 +68,24 @@ export function selectWithin(buildings, towers, radiusM) {
   return buildings.filter((b) => towers.some((t) => distanceM(b.centroid, { lat: t.lat, lon: t.lon }) <= radiusM));
 }
 
+// normaliseWindow puts two corners (any order) into a window
+// { south, west, north, east }, in degrees.
+export function normaliseWindow(a, b) {
+  return { south: Math.min(a.lat, b.lat), north: Math.max(a.lat, b.lat), west: Math.min(a.lon, b.lon), east: Math.max(a.lon, b.lon) };
+}
+
+// selectInWindow returns the buildings whose centroid lies inside the
+// window (edges included), in file order.
+export function selectInWindow(buildings, w) {
+  return buildings.filter((b) => b.centroid.lat >= w.south && b.centroid.lat <= w.north && b.centroid.lon >= w.west && b.centroid.lon <= w.east);
+}
+
+// windowSizeM is the window's width (along its middle) and height in metres.
+export function windowSizeM(w) {
+  const mid = (w.south + w.north) / 2;
+  return { width: distanceM({ lat: mid, lon: w.west }, { lat: mid, lon: w.east }), height: distanceM({ lat: w.south, lon: w.west }, { lat: w.north, lon: w.west }) };
+}
+
 // mercator projects to EPSG:3857 metres, for the batching grid.
 const MERC_R = 6378137;
 export function mercator({ lat, lon }) {

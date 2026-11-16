@@ -210,8 +210,17 @@ roof it stands on or its own tower, never block it.
 
 The Buildings mode evaluates building footprints instead of patches; map
 clicks do not start patches in this mode. Evaluate buildings takes every building of `buildings.json` whose centroid
-lies within the radius (default 1000 m) of any ticked tower, draws them as
-outlines on the map's Data layer, and sends them to `POST /api/v1/building`
+lies within the radius (default 1000 m) of any ticked tower, or (sample
+0.8.16) inside a **window** drawn on the map: the Select field chooses
+between the two. With the window selection the map stops panning and the
+cursor is a crosshair; hold the left mouse button and drag to draw the
+window, which stays on the map (a new drag replaces it, a plain click
+leaves it) with its size and building count under the field, and Evaluate
+buildings sends every building whose centroid is inside it, however many,
+to the ticked towers. Clear buildings keeps the window; switching the
+selection back to the radius hides it and lets the map pan again. The
+selected buildings are drawn as
+outlines on the map's Data layer, and sent to `POST /api/v1/building`
 in batches of 300 neighbours (400 before 0.8.0; the NLOS walk made the largest batch run close to the 120 s deadline) (grouped by 200 m squares, ordered along a
 Hilbert curve so each batch is a compact block and the service's own
 clusters are full), one request at a time. As each reply arrives the
@@ -385,9 +394,9 @@ and is skipped otherwise.
 - `point.js`: the right-click query's pure parts: the request, the best
   radio per tower, the line colour and dash, the formatting.
 - `building.js`: the buildings mode's pure parts: loading and checking
-  `buildings.json`, selecting footprints within a radius of the towers,
-  batching by 200 m squares, the request, the colours and the per-tower
-  best radios.
+  `buildings.json`, selecting footprints within a radius of the towers or
+  inside a window, batching by 200 m squares, the request, the colours
+  and the per-tower best radios.
 - `buildings.json`: the OpenStreetMap footprints (a symlink to the
   regenerable file; see Buildings above). `tools/`: the download and
   compaction scripts.
