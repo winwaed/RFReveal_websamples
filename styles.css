@@ -106,3 +106,8 @@ td.na { color: #999; }
 .grid { stroke: #e0e0e0; }
 .readout, .caption { margin: 2px 0; font-size: 12px; min-height: 1.2em; }
 button.link { font: inherit; font-size: 12px; color: #1565c0; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+/* The drawing layer over the map (Buildings mode, window selection): shown
+   only while a window drag is wanted, so the map's own gestures are
+   untouched at every other time. The hidden attribute must win here too. */
+#windowLayer { position: absolute; inset: 0; z-index: 10; cursor: crosshair; background: transparent; touch-action: none; }
+#windowLayer[hidden] { display: none; }

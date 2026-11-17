@@ -30,7 +30,7 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
 // SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
-const SAMPLE_VERSION = "rfreveal-map sample 0.8.18";
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.19";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
 // The signal colour scale: green strong to red weak, or reversed (red
@@ -60,8 +60,10 @@ let selectBy = "radius"; // buildings mode: "radius" around the ticked towers, o
 let windowRect = null; // the google.maps.Rectangle showing the drawn window
 let windowBounds = null; // the window as { south, west, north, east }, once drawn
 let windowDrag = null; // the drag in progress: { start: { lat, lon }, previous: windowBounds before it }
-let mouseLatLng = null; // where the mouse last was over the map (the map's mousemove event)
-let windowJustDrawn = false; // the mouseup that ended a drag is followed by a click: not a building popup
+let windowArmed = false; // the Draw window button was pressed: the next left-button drag draws
+let shiftHeld = false; // Shift is down: drags draw while it is held
+let windowLayer = null; // the transparent layer over the map that takes the drawing drags
+let windowProjector = null; // an empty OverlayView, for its container-pixel to LatLng projection
 let point = null; // the right-click query on the map: { card, dot, lines, request, reply } until hidden or replaced
 let pointInFlight = null; // AbortController of the running point request
 let extentMask = null; // the Polygon greying out everything outside the elevation dataset
@@ -207,46 +209,103 @@ async function initMap() {
   // Building footprints live on the Data layer; a click on one is a
   // building popup, not a patch.
   map.data.setStyle(styleBuilding);
-  map.data.addListener("click", (ev) => {
-    if (!windowJustDrawn) openBuildingPopup(ev.feature);
-  });
-  // The window selection: the left button dragged across the map draws a
-  // rectangle. The map's own mousemove events (and the Data layer's, which
-  // take over above a footprint) give the position in degrees; the DOM
-  // mousedown and mouseup on the map say when the button goes down and up,
-  // because the Map has no such events. Panning is off while the window
-  // selection is active (applySelection), so the drag is free; the right
-  // button still queries a point. (The middle button was tried in 0.8.17:
-  // Google Maps pans with it too.)
-  const track = (ev) => {
-    mouseLatLng = ev.latLng;
-    if (windowDrag) windowDragTo(ev.latLng);
-  };
-  map.addListener("mousemove", track);
-  map.data.addListener("mousemove", track);
-  $("map").addEventListener("mousedown", (ev) => {
-    if (ev.button !== 0 || !windowing() || !mouseLatLng) return;
-    ev.preventDefault();
-    windowDrag = { start: { lat: mouseLatLng.lat(), lon: mouseLatLng.lng() }, previous: windowBounds };
-    windowDragTo(mouseLatLng);
-  });
-  window.addEventListener("mouseup", (ev) => {
-    if (ev.button !== 0 || !windowDrag) return;
-    windowDragEnd();
-  });
+  map.data.addListener("click", (ev) => openBuildingPopup(ev.feature));
+  setupWindowLayer(gm);
   applyMode();
 }
 
 // --- the window selection ---
+//
+// The window is drawn on a transparent layer laid over the map only while
+// a drag is wanted: after the Draw window button, or while Shift is held.
+// The map never sees those drags, and at every other moment its own
+// gestures (left-button pan, wheel zoom, right-click point query) are
+// untouched. The layer's pixel positions become degrees through an empty
+// OverlayView's projection. Esc cancels a drag and the arming.
 
 function windowing() {
   return mode === "buildings" && selectBy === "window";
 }
 
-// windowDragTo stretches the window from the drag's start to the position.
-function windowDragTo(latLng) {
+function setupWindowLayer(gm) {
+  windowProjector = new gm.OverlayView();
+  windowProjector.onAdd = () => {};
+  windowProjector.draw = () => {};
+  windowProjector.onRemove = () => {};
+  windowProjector.setMap(map);
+  windowLayer = document.createElement("div");
+  windowLayer.id = "windowLayer";
+  windowLayer.hidden = true;
+  windowLayer.title = "Drag to draw the window; Esc cancels";
+  $("map").appendChild(windowLayer);
+  windowLayer.addEventListener("pointerdown", (ev) => {
+    if (ev.button !== 0) return;
+    ev.preventDefault();
+    const at = layerLatLng(ev);
+    if (!at) return;
+    windowLayer.setPointerCapture(ev.pointerId);
+    windowDrag = { start: at, previous: windowBounds };
+    windowDragTo(at);
+  });
+  windowLayer.addEventListener("pointermove", (ev) => {
+    if (!windowDrag) return;
+    const at = layerLatLng(ev);
+    if (at) windowDragTo(at);
+  });
+  windowLayer.addEventListener("pointerup", (ev) => {
+    if (ev.button !== 0 || !windowDrag) return;
+    windowDragEnd(false);
+  });
+  windowLayer.addEventListener("contextmenu", (ev) => ev.preventDefault());
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Shift" && windowing() && !shiftHeld) {
+      shiftHeld = true;
+      showWindowLayer();
+    } else if (ev.key === "Escape" && (windowDrag || windowArmed)) {
+      if (windowDrag) windowDragEnd(true);
+      armWindow(false);
+    }
+  });
+  document.addEventListener("keyup", (ev) => {
+    if (ev.key !== "Shift") return;
+    shiftHeld = false;
+    showWindowLayer();
+  });
+  window.addEventListener("blur", () => {
+    shiftHeld = false;
+    showWindowLayer();
+  });
+}
+
+// layerLatLng converts a pointer event on the layer to degrees.
+function layerLatLng(ev) {
   const gm = window.google.maps;
-  windowBounds = normaliseWindow(windowDrag.start, { lat: latLng.lat(), lon: latLng.lng() });
+  const proj = windowProjector && windowProjector.getProjection();
+  if (!proj) return null;
+  const r = $("map").getBoundingClientRect();
+  const ll = proj.fromContainerPixelToLatLng(new gm.Point(ev.clientX - r.left, ev.clientY - r.top));
+  return ll ? { lat: ll.lat(), lon: ll.lng() } : null;
+}
+
+// armWindow is the Draw window button: the next drag on the map draws.
+function armWindow(on) {
+  windowArmed = on;
+  $("drawWindow").textContent = on ? "Cancel drawing" : "Draw window";
+  showWindowLayer();
+}
+
+// showWindowLayer lays the drawing layer over the map while a drag is
+// wanted (armed, Shift held, or in progress) and the window selection is on.
+function showWindowLayer() {
+  if (!windowLayer) return;
+  const on = windowing() && (windowArmed || shiftHeld || Boolean(windowDrag));
+  windowLayer.hidden = !on;
+}
+
+// windowDragTo stretches the window from the drag's start to the position.
+function windowDragTo(at) {
+  const gm = window.google.maps;
+  windowBounds = normaliseWindow(windowDrag.start, at);
   if (!windowRect) {
     windowRect = new gm.Rectangle({ map, clickable: false, strokeColor: "#fff", strokeOpacity: 0.9, strokeWeight: 2, fillColor: "#1565c0", fillOpacity: 0.08, zIndex: 50 });
   }
@@ -255,41 +314,51 @@ function windowDragTo(latLng) {
   windowInfo();
 }
 
-// windowDragEnd keeps the window if it has any size, otherwise the drag was
-// a click and the earlier window (if any) stays.
-function windowDragEnd() {
+// windowDragEnd keeps the window if it has any size and was not cancelled;
+// a cancelled drag, or a plain click, leaves the earlier window (if any).
+// The arming is used up by one drag; Shift keeps drawing while held.
+function windowDragEnd(cancelled) {
   const drag = windowDrag;
   windowDrag = null;
-  windowJustDrawn = true;
-  setTimeout(() => (windowJustDrawn = false), 0);
-  if (windowBounds.south === windowBounds.north || windowBounds.west === windowBounds.east) {
+  if (cancelled || windowBounds.south === windowBounds.north || windowBounds.west === windowBounds.east) {
     windowBounds = drag.previous;
     if (windowBounds) windowRect.setBounds(windowBounds);
     else windowRect.setMap(null);
     windowInfo();
   }
+  armWindow(false);
+}
+
+// removeWindow takes the window off the map; the results stay.
+function removeWindow() {
+  if (windowDrag) windowDragEnd(true);
+  windowBounds = null;
+  if (windowRect) windowRect.setMap(null);
+  windowInfo();
 }
 
 // windowInfo writes the window's size and how many buildings it holds.
 function windowInfo() {
+  $("removeWindow").disabled = !windowBounds;
   if (!windowBounds) return show("windowInfo", "");
   const { width, height } = windowSizeM(windowBounds);
   const n = selectInWindow(BUILDINGS, windowBounds).length;
   show("windowInfo", `window ${(width / 1000).toFixed(2)} × ${(height / 1000).toFixed(2)} km: ${n} building${n === 1 ? "" : "s"}`);
 }
 
-// applySelection shows the controls of the chosen selection, stops the map
-// panning while a window can be drawn (the left button draws instead) and
-// shows the drawn window only then.
+// applySelection shows the controls of the chosen selection and the drawn
+// window only while the window selection is on; leaving it disarms.
 function applySelection() {
   selectBy = $("buildingSelect").value;
   const w = windowing();
   $("buildingRadiusField").hidden = selectBy === "window";
   $("windowHint").hidden = selectBy !== "window";
+  $("windowButtons").hidden = selectBy !== "window";
   $("windowInfo").hidden = selectBy !== "window" || !windowBounds;
-  if (!map) return;
-  map.setOptions({ draggable: !w, draggableCursor: w ? "crosshair" : null, draggingCursor: w ? "crosshair" : null });
-  if (windowRect) windowRect.setMap(w && windowBounds ? map : null);
+  if (!w && windowArmed) armWindow(false);
+  if (!w && windowDrag) windowDragEnd(true);
+  showWindowLayer();
+  if (map && windowRect) windowRect.setMap(w && windowBounds ? map : null);
 }
 
 // --- modes ---
@@ -1146,7 +1215,7 @@ async function evaluateBuildings() {
   if (!(opts.aboveSurface > 0)) return show("buildingError", "set the receiver height above the rooftop: buildings are evaluated at that height");
   const byWindow = opts.buildingSelect === "window";
   if (!byWindow && !(opts.buildingRadius > 0)) return show("buildingError", "the radius must be positive");
-  if (byWindow && !windowBounds) return show("buildingError", "draw a window first: hold the left mouse button and drag on the map");
+  if (byWindow && !windowBounds) return show("buildingError", "draw a window first: press Draw window (or hold Shift) and drag on the map");
   if (!checkFlags(opts, "buildingError")) return;
   const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, opts.buildingRadius);
   if (selected.length === 0) return show("buildingError", byWindow ? "no buildings in the window" : `no buildings within ${opts.buildingRadius} m of the ticked towers`);
@@ -1423,6 +1492,8 @@ async function start() {
   wireProfile();
   $("evaluateBuildings").addEventListener("click", evaluateBuildings);
   $("buildingSelect").addEventListener("change", applySelection);
+  $("drawWindow").addEventListener("click", () => armWindow(!windowArmed));
+  $("removeWindow").addEventListener("click", removeWindow);
   $("stopBuildings").addEventListener("click", stopBuildings);
   $("clearBuildings").addEventListener("click", clearBuildings);
   const loaded = await loadTowers(config.towersUrl || "towers.json");

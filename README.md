@@ -211,16 +211,21 @@ roof it stands on or its own tower, never block it.
 The Buildings mode evaluates building footprints instead of patches; map
 clicks do not start patches in this mode. Evaluate buildings takes every building of `buildings.json` whose centroid
 lies within the radius (default 1000 m) of any ticked tower, or (sample
-0.8.18) inside a **window** drawn on the map: the Select field chooses
-between the two. With the window selection the map stops panning and the
-cursor is a crosshair; hold the left mouse button and drag to draw the
-window (the right button still queries a point), which stays on the map
-(a new drag replaces it, a plain click leaves it) with its size and
-building count under the field, and Evaluate buildings sends every
-building whose centroid is inside it, however many, to the ticked towers.
-Clear buildings keeps the window; switching the selection back to the
-radius hides it and lets the map pan again. (0.8.17 drew with the middle
-button, which Google Maps also pans with.) The
+0.8.19) inside a **window** drawn on the map: the Select field chooses
+between the two. To draw the window press **Draw window** and drag on the
+map with the left mouse button, or hold **Shift** and drag at any time
+(Shift keeps drawing while held; the button is used up by one drag). The
+drag lands on a transparent layer laid over the map only while a drag is
+wanted, so the map's own gestures, left-button pan, wheel and
+middle-button zoom and pan, and the right-click point query, are untouched
+at every other moment (0.8.16 to 0.8.18 disabled panning instead, which
+also lost the wheel and middle button). **Esc** cancels a drag (and the
+button); a drag with no size leaves the earlier window; a new window
+replaces the old; **Remove window** takes it off the map. The window
+shows its size and building count under the field, and Evaluate
+buildings sends every building whose centroid is inside it, however many,
+to the ticked towers. Clear buildings keeps the window; switching the
+selection back to the radius hides it. The
 selected buildings are drawn as
 outlines on the map's Data layer, and sent to `POST /api/v1/building`
 in batches of 300 neighbours (400 before 0.8.0; the NLOS walk made the largest batch run close to the 120 s deadline) (grouped by 200 m squares, ordered along a
