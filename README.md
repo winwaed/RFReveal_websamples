@@ -260,17 +260,23 @@ since 2026-10-29: OpenStreetMap, the source until then, has most of the
 commercial buildings of Wichita Falls but few of its houses (198
 footprints within 1 km of Chase against 1474 now). The release is tiled
 by Bing quadkey; the tool downloads the index and the four tiles that
-cover the dataset's box (13 MB), keeps the footprints within 6 km of the
-towers and writes the compact file, carrying over the names, building
-types and levels of the OpenStreetMap footprints whose centroid falls
-inside a Microsoft footprint (about 2600 of 46,775), so the popups keep
-their names. Each footprint has the release's estimated `height_m` where
-it has one (35,447 of them). The downloads and the file are kept on the
-SSD in `~/rfreveal/data/msbuildings` (archive copy on GeoData):
+cover the dataset's box (13 MB), keeps the footprints inside the
+**elevation dataset's extent** (sample 0.8.20: `--extent` takes the
+running service's base URL and reads `GET /api/v1/extent`, or a saved
+GeoJSON copy of it; before, `--distance-km`, still available, kept those
+within 6 km of the towers) and writes the compact file, carrying over the
+names, building types and levels of the OpenStreetMap footprints whose
+centroid falls inside a Microsoft footprint (about 2600 of 76,759), so
+the popups keep their names. Each footprint has the release's estimated
+`height_m` where it has one (50,715 of them). The whole Wichita Falls
+extent holds 76,759 footprints (17 MB; the 6 km file had 46,775, 10.5 MB),
+so every window drawn inside the dataset finds buildings. The downloads
+and the file are kept on the SSD in `~/rfreveal/data/msbuildings`
+(archive copy on GeoData), replacing the paths below with your own:
 
 ```bash
 python3 -I tools/fetch-ms-buildings.py ~/rfreveal/data/msbuildings/raw towers.json \
-    ~/rfreveal/data/msbuildings/buildings.json --distance-km 6 --osm ~/rfreveal/data/osm/buildings.json
+    ~/rfreveal/data/msbuildings/buildings.json --extent http://localhost:8080 --osm ~/rfreveal/data/osm/buildings.json
 ln -sfn ~/rfreveal/data/msbuildings/buildings.json buildings.json
 ```
 

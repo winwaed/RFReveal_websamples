@@ -6,8 +6,10 @@ OpenStreetMap has not mapped in the study area.
 The release is tiled by Bing quadkey (level 9) and indexed in
 dataset-links.csv; this tool downloads the index and the UnitedStates
 tiles covering the box, keeps the footprints whose centroid is within
-DISTANCE km of any tower in towers.json (the rule of compact-buildings.py)
-and writes the same compact format:
+DISTANCE km of any tower in towers.json (the rule of compact-buildings.py),
+or, with --extent, inside the elevation dataset's extent (the service's
+GET /api/v1/extent, given as its base URL or as a saved GeoJSON file; the
+box is then taken from it), and writes the same compact format:
 
     {"id": "ms023112211-4711", "building": "yes", "rings": [[[lon, lat], ...]],
      "height_m": 4.2}
@@ -21,6 +23,8 @@ python3 -I, as the data is downloaded.
 
     fetch-ms-buildings.py RAWDIR TOWERS_JSON OUT_JSON [--distance-km 6]
         [--bbox S W N E] [--osm osm-buildings.json]
+    fetch-ms-buildings.py RAWDIR TOWERS_JSON OUT_JSON --extent http://localhost:8080
+        [--osm osm-buildings.json]
 """
 import argparse
 import csv
@@ -99,6 +103,32 @@ def inside(ring, lon, lat):
     return hit
 
 
+def load_extent(src):
+    """The extent as a list of islands, each [outer, hole, ...] rings, from the
+    service (base URL) or a saved GeoJSON Feature; and its bounding box."""
+    if src.startswith("http://") or src.startswith("https://"):
+        req = urllib.request.Request(src.rstrip("/") + "/api/v1/extent", headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            doc = json.load(r)
+    else:
+        with open(src) as f:
+            doc = json.load(f)
+    geom = doc.get("geometry") or doc
+    if geom.get("type") == "Polygon":
+        islands = [geom["coordinates"]]
+    elif geom.get("type") == "MultiPolygon":
+        islands = geom["coordinates"]
+    else:
+        sys.exit(f"{src}: expected a Polygon or MultiPolygon extent, got {geom.get('type')}")
+    xs = [p[0] for isl in islands for p in isl[0]]
+    ys = [p[1] for isl in islands for p in isl[0]]
+    return islands, (min(ys), min(xs), max(ys), max(xs))
+
+
+def in_extent(islands, lon, lat):
+    return any(inside(isl[0], lon, lat) and not any(inside(h, lon, lat) for h in isl[1:]) for isl in islands)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("rawdir")
@@ -108,12 +138,18 @@ def main():
     ap.add_argument("--bbox", nargs=4, type=float, metavar=("S", "W", "N", "E"),
                     default=[33.64101, -98.80454, 34.16019, -98.23085], help="the dataset box (default wichitafalls)")
     ap.add_argument("--osm", help="OSM buildings.json whose names, types and levels are carried over")
+    ap.add_argument("--extent", help="keep the footprints inside the elevation extent instead: the service's base URL "
+                    "(GET /api/v1/extent) or a saved GeoJSON Feature; sets the box too")
     a = ap.parse_args()
     os.makedirs(a.rawdir, exist_ok=True)
 
     with open(a.towers) as f:
         towers = [(t["lon"], t["lat"]) for t in json.load(f)["towers"]]
     limit = a.distance_km * 1000
+    islands = None
+    if a.extent:
+        islands, a.bbox = load_extent(a.extent)
+        print(f"extent: {len(islands)} island(s), box S {a.bbox[0]} W {a.bbox[1]} N {a.bbox[2]} E {a.bbox[3]}", file=sys.stderr)
 
     index = os.path.join(a.rawdir, "dataset-links.csv")
     if download(INDEX_URL, index):
@@ -149,7 +185,10 @@ def main():
                     if not rings:
                         continue
                     lon, lat = centroid(rings[0])
-                    if not any(distance_m(lon, lat, tl, tt) <= limit for tl, tt in towers):
+                    if islands is not None:
+                        if not in_extent(islands, lon, lat):
+                            continue
+                    elif not any(distance_m(lon, lat, tl, tt) <= limit for tl, tt in towers):
                         continue
                     entry = {"id": f"ms{q}-{n}" + ("" if k == 0 else f"-{k + 1}"), "building": "yes", "rings": rings}
                     h = (feat.get("properties") or {}).get("height")
@@ -189,7 +228,8 @@ def main():
     out.sort(key=lambda b: b["id"])
     with open(a.out, "w") as f:
         json.dump(out, f, separators=(",", ":"))
-    print(f"{kept} of {seen_total} footprints kept within {a.distance_km} km of {len(towers)} towers"
+    rule = "inside the elevation extent" if islands is not None else f"within {a.distance_km} km of {len(towers)} towers"
+    print(f"{kept} of {seen_total} footprints kept {rule}"
           + (f", {named} carry OSM names, types or levels" if a.osm else "") + f"; wrote {a.out}", file=sys.stderr)
 
 
