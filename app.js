@@ -231,7 +231,7 @@ function addCreditControl(gm) {
   btn.textContent = "About";
   btn.addEventListener("click", openAbout);
   div.appendChild(btn);
-  map.controls[gm.ControlPosition.BOTTOM_CENTER].push(div);
+  map.controls[gm.ControlPosition.LEFT_BOTTOM].push(div); // above the Google logo, clear of Google's attribution text at the bottom right
 }
 
 // openAbout shows the About dialog, with the service's version and dataset

@@ -322,8 +322,8 @@ the map is shown: the building footprints are under the Open Database
 License (Microsoft Global ML Building Footprints, with names, types and
 levels © OpenStreetMap contributors), and the elevation is USGS 3DEP
 lidar processed by Winwaed Software Technology LLC. Since sample 0.8.21 a
-one-line credit sits at the bottom centre of the map (a Google Maps
-custom control), because the OpenStreetMap attribution guidelines say a
+one-line credit sits at the lower left of the map above the Google logo
+(a Google Maps custom control, clear of Google's own attribution), because the OpenStreetMap attribution guidelines say a
 credit hidden behind a click does not count, and its **About** link, like
 the one under the panel, opens a dialog with the full credits and links
 (data, Google's imagery, the demo's BSD-3-Clause licence, geotiff.js, the
