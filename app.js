@@ -30,7 +30,7 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
 // SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
-const SAMPLE_VERSION = "rfreveal-map sample 0.8.20";
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.21";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
 // The signal colour scale: green strong to red weak, or reversed (red
@@ -199,6 +199,7 @@ async function initMap() {
     if (mode === "patch") evaluate(ev.latLng.lat(), ev.latLng.lng());
   });
   drawExtent();
+  addCreditControl(gm);
   // A right click anywhere, in either mode, is a point query. The
   // footprints and the Data layer take the event themselves, so it is
   // listened for there too.
@@ -212,6 +213,40 @@ async function initMap() {
   map.data.addListener("click", (ev) => openBuildingPopup(ev.feature));
   setupWindowLayer(gm);
   applyMode();
+}
+
+// --- credits and About ---
+
+// addCreditControl puts the one-line data credit on the map itself (the
+// ODbL asks for the footprints' credit where the map is shown, and the
+// OpenStreetMap guidelines say a credit hidden behind a click does not
+// count), with the About link to the full credits.
+function addCreditControl(gm) {
+  const div = document.createElement("div");
+  div.className = "credit";
+  div.innerHTML = "Buildings: Microsoft Building Footprints · © OpenStreetMap contributors (ODbL) · Elevation: USGS 3DEP · ";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "link";
+  btn.textContent = "About";
+  btn.addEventListener("click", openAbout);
+  div.appendChild(btn);
+  map.controls[gm.ControlPosition.BOTTOM_CENTER].push(div);
+}
+
+// openAbout shows the About dialog, with the service's version and dataset
+// from its health reply when it answers.
+async function openAbout() {
+  const dlg = $("about");
+  if (!dlg.open) dlg.showModal();
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/health`);
+    const h = await res.json();
+    const e = h.elevation || {};
+    $("aboutService").textContent = `Service: rfreveald ${h.version || "?"} at ${API_BASE}` + (e.name ? `, elevation dataset "${e.name}" (${e.tiles} tiles, ${e.zone}).` : ".");
+  } catch (err) {
+    $("aboutService").textContent = `Service at ${API_BASE} not reached: ${err.message}`;
+  }
 }
 
 // --- the window selection ---
@@ -1493,6 +1528,8 @@ async function start() {
   $("evaluateBuildings").addEventListener("click", evaluateBuildings);
   $("buildingSelect").addEventListener("change", applySelection);
   $("drawWindow").addEventListener("click", () => armWindow(!windowArmed));
+  $("aboutOpen").addEventListener("click", openAbout);
+  $("aboutClose").addEventListener("click", () => $("about").close());
   $("removeWindow").addEventListener("click", removeWindow);
   $("stopBuildings").addEventListener("click", stopBuildings);
   $("clearBuildings").addEventListener("click", clearBuildings);

@@ -315,6 +315,23 @@ or 5 % (wet) of rainy time at each tower, from the ITU maps built into
 the service image. The result shows the mode and rain rate used and, per
 radio, the gas plus rain specific attenuation in dB/km.
 
+## Credits and the About dialog
+
+The data the demo shows is licensed, and two credits must appear where
+the map is shown: the building footprints are under the Open Database
+License (Microsoft Global ML Building Footprints, with names, types and
+levels © OpenStreetMap contributors), and the elevation is USGS 3DEP
+lidar processed by Winwaed Software Technology LLC. Since sample 0.8.21 a
+one-line credit sits at the bottom centre of the map (a Google Maps
+custom control), because the OpenStreetMap attribution guidelines say a
+credit hidden behind a click does not count, and its **About** link, like
+the one under the panel, opens a dialog with the full credits and links
+(data, Google's imagery, the demo's BSD-3-Clause licence, geotiff.js, the
+service's ITU-R recommendations) and the service's version and dataset
+read from `GET /api/v1/health`. If you replace the footprints or the
+elevation data, change the credit line in `app.js` (`addCreditControl`)
+and the dialog in `index.html`.
+
 ## Run
 
 1. Start the service with the Wichita Falls dataset, allowing this page's

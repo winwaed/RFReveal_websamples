@@ -78,7 +78,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.20</p>
+      <p class="version">rfreveal-map sample 0.8.21 · <button id="aboutOpen" class="link" type="button">About and data credits</button></p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -142,16 +142,46 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.20",
-      "./building.js": "./building.js?v=0.8.20",
-      "./towers.js": "./towers.js?v=0.8.20",
-      "./point.js": "./point.js?v=0.8.20",
-      "./debug.js": "./debug.js?v=0.8.20",
-      "./extent.js": "./extent.js?v=0.8.20",
-      "./profile.js": "./profile.js?v=0.8.20"
+      "./patch.js": "./patch.js?v=0.8.21",
+      "./building.js": "./building.js?v=0.8.21",
+      "./towers.js": "./towers.js?v=0.8.21",
+      "./point.js": "./point.js?v=0.8.21",
+      "./debug.js": "./debug.js?v=0.8.21",
+      "./extent.js": "./extent.js?v=0.8.21",
+      "./profile.js": "./profile.js?v=0.8.21"
     }
   }
   </script>
-  <script type="module" src="app.js?v=0.8.20"></script>
+  <dialog id="about" aria-labelledby="aboutTitle">
+    <h2 id="aboutTitle">About this demo</h2>
+    <p><strong>rfreveal-map</strong>, sample 0.8.21: an open-source web page that shows what the
+      RF Reveal service computes. <span id="aboutService">Service: not reached yet.</span></p>
+    <h3>Data credits</h3>
+    <ul>
+      <li><strong>Elevation</strong> (terrain, surface and vegetation): U.S. Geological Survey,
+        <a href="https://www.usgs.gov/3d-elevation-program" target="_blank" rel="noopener">3D Elevation Program (3DEP)</a>
+        lidar (public domain), processed by Winwaed Software Technology LLC into the tiles the service reads.</li>
+      <li><strong>Building footprints</strong>:
+        <a href="https://github.com/microsoft/GlobalMLBuildingFootprints" target="_blank" rel="noopener">Microsoft Global ML Building Footprints</a>,
+        under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">Open Database License (ODbL) 1.0</a>;
+        building names, types and levels © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL 1.0.
+        The footprints file is a derived database under the same licence.</li>
+      <li><strong>Map imagery, roads and places</strong>: Google Maps Platform, under Google's terms
+        (its own attribution is on the map).</li>
+      <li><strong>Towers and radios</strong>: fictional sample sites in <code>towers.json</code>, not a real network.</li>
+    </ul>
+    <h3>Software</h3>
+    <ul>
+      <li>This demo: <a href="https://github.com/winwaed/RFReveal_websamples" target="_blank" rel="noopener">github.com/winwaed/RFReveal_websamples</a>,
+        BSD 3-Clause License, © 2026 Winwaed Software Technology LLC
+        (<a href="https://github.com/winwaed/RFReveal_websamples/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a>,
+        <a href="https://github.com/winwaed/RFReveal_websamples/blob/main/NOTICE" target="_blank" rel="noopener">NOTICE</a>).
+        The demo is open source; the RF Reveal service it talks to is commercial software, and "RF Reveal" is a product name the licence does not grant.</li>
+      <li>geotiff.js, MIT License, © 2015 EOX IT Services GmbH (<code>vendor/</code>).</li>
+      <li>Propagation in the service follows ITU-R recommendations (P.526, P.833, P.676, P.835, P.838); the service's own NOTICE lists its third-party components.</li>
+    </ul>
+    <p class="buttons"><button id="aboutClose" type="button">Close</button></p>
+  </dialog>
+  <script type="module" src="app.js?v=0.8.21"></script>
 </body>
 </html>
