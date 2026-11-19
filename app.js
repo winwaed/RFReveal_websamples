@@ -8,22 +8,22 @@
 // the top right opens a pane showing the last request sent to the
 // service and its reply (debug.js). The buildings mode (building.js)
 // sends the OpenStreetMap footprints within a radius of the ticked towers
-// to the building endpoint in batches and colours them on the map's Data
+// to the building endpoint in batches and colors them on the map's Data
 // layer as the replies arrive; a click on a building opens its figures.
 // The two modes are
 // exclusive: the mode switch shows one mode's controls, overlays and key
 // at a time, so the key never mixes the two palettes. In either mode a
 // right click asks the point endpoint (point.js) for the link budget from
 // every radio of the ticked towers to that point: a line is drawn from the
-// point to each tower, coloured by the best signal, and a card beside the
+// point to each tower, colored by the best signal, and a card beside the
 // point lists the figures and bearings; the card can be dragged out of the
 // way, and its Hide button removes it with the lines; the next right
 // click replaces them.
 
-import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStrongest, rasterToDataURL, setSignalColourReversed, signalColor } from "./patch.js";
-import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, normaliseWindow, selectInWindow, selectWithin, toFeature, windowSizeM } from "./building.js";
+import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStrongest, rasterToDataURL, setSignalColorReversed, signalColor } from "./patch.js";
+import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, normalizeWindow, selectInWindow, selectWithin, toFeature, windowSizeM } from "./building.js";
 import { loadTowers } from "./towers.js";
-import { FIELDS, convertTowers, distanceUnit, kmToDistance, lengthUnit, normaliseUnits, toMetres, unitsName } from "./units.js";
+import { FIELDS, convertTowers, distanceUnit, kmToDistance, lengthUnit, normalizeUnits, toMeters, unitsName } from "./units.js";
 import { buildPointRequest, degrees, fetchPoint, heightText, lineStyle, rgb, towerRows } from "./point.js";
 import { exchangeSummary, prettyJSON, savedExchange, savedExchangeName } from "./debug.js";
 import { binAt, buildProfileRequest, chartLayout, chartSVG, covers as viewCovered, fetchProfile, fetchWindow, panRange, profileCaption, profileTitle, readout, unitLabel, viewOf, zoomRange } from "./profile.js";
@@ -31,15 +31,15 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
 // SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
-const SAMPLE_VERSION = "rfreveal-map sample 0.8.23";
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.24";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
 // The page's length units (units.js): every request carries them, every
 // figure shown is in them.
-const UNITS = normaliseUnits(config.units);
+const UNITS = normalizeUnits(config.units);
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
-// The signal colour scale: green strong to red weak, or reversed (red
+// The signal color scale: green strong to red weak, or reversed (red
 // strong to green weak, as cnHeat draws it) when the config says so.
-setSignalColourReversed(config.reverseSignalColours);
+setSignalColorReversed(config.reverseSignalColors);
 const ON = { background: "#1565c0", border: "#0d47a1" };
 const OFF = { background: "#9e9e9e", border: "#616161" };
 
@@ -70,7 +70,7 @@ let windowLayer = null; // the transparent layer over the map that takes the dra
 let windowProjector = null; // an empty OverlayView, for its container-pixel to LatLng projection
 let point = null; // the right-click query on the map: { card, dot, lines, request, reply } until hidden or replaced
 let pointInFlight = null; // AbortController of the running point request
-let extentMask = null; // the Polygon greying out everything outside the elevation dataset
+let extentMask = null; // the Polygon graying out everything outside the elevation dataset
 let profile = null; // the open path profile (profile.js): { towerId, radioId, rxHeight, request, reply, view, shown, layout, halo } until closed
 let profileInFlight = null; // AbortController of the running profile request
 let profileWanted = false; // the view moved while a request was in flight: show it again when the reply is in
@@ -92,7 +92,7 @@ function options() {
     rxClearance: Number($("rxClearance").value),
     buildingRadius: Number($("buildingRadius").value),
     buildingSelect: $("buildingSelect").value,
-    colourBy: $("colourBy").value,
+    colorBy: $("colorBy").value,
   };
 }
 
@@ -360,7 +360,7 @@ function showWindowLayer() {
 // windowDragTo stretches the window from the drag's start to the position.
 function windowDragTo(at) {
   const gm = window.google.maps;
-  windowBounds = normaliseWindow(windowDrag.start, at);
+  windowBounds = normalizeWindow(windowDrag.start, at);
   if (!windowRect) {
     windowRect = new gm.Rectangle({ map, clickable: false, strokeColor: "#fff", strokeOpacity: 0.9, strokeWeight: 2, fillColor: "#1565c0", fillOpacity: 0.08, zIndex: 50 });
   }
@@ -369,13 +369,13 @@ function windowDragTo(at) {
   windowInfo();
 }
 
-// windowDragEnd keeps the window if it has any size and was not cancelled;
-// a cancelled drag, or a plain click, leaves the earlier window (if any).
+// windowDragEnd keeps the window if it has any size and was not canceled;
+// a canceled drag, or a plain click, leaves the earlier window (if any).
 // The arming is used up by one drag; Shift keeps drawing while held.
-function windowDragEnd(cancelled) {
+function windowDragEnd(canceled) {
   const drag = windowDrag;
   windowDrag = null;
-  if (cancelled || windowBounds.south === windowBounds.north || windowBounds.west === windowBounds.east) {
+  if (canceled || windowBounds.south === windowBounds.north || windowBounds.west === windowBounds.east) {
     windowBounds = drag.previous;
     if (windowBounds) windowRect.setBounds(windowBounds);
     else windowRect.setMap(null);
@@ -467,13 +467,13 @@ async function evaluate(lat, lon) {
     const reply = await fetchPatch(API_BASE, buildRequest({ lat, lon, towers, ...opts, units: UNITS }), { signal: ctl.signal, trace });
     if (ctl.signal.aborted) return;
     renderResult(reply, { lat, lon });
-    openPopup(reply, { lat, lon }, toMetres(opts.radius, UNITS));
+    openPopup(reply, { lat, lon }, toMeters(opts.radius, UNITS));
     if (reply.raster) {
       const decoded = await decodeRaster(reply.raster);
       // The circle marks the patch the service evaluated: its echoed
-      // centre and radius (in the request's units; the circle wants metres).
-      const centre = reply.location || { lat, lon };
-      addPatch(decoded, opts.minSignalDbm, { lat: centre.lat, lon: centre.lon, radiusM: toMetres(reply.radius ?? opts.radius, UNITS) });
+      // center and radius (in the request's units; the circle wants meters).
+      const center = reply.location || { lat, lon };
+      addPatch(decoded, opts.minSignalDbm, { lat: center.lat, lon: center.lon, radiusM: toMeters(reply.radius ?? opts.radius, UNITS) });
     }
   } catch (e) {
     if (e.name === "AbortError") return;
@@ -547,7 +547,7 @@ function clearRasters() {
 // --- point query (right click) ---
 
 // drawExtent asks the service for the area its elevation dataset covers
-// (docs/extent-api.md) and greys out everything else: one Polygon whose
+// (docs/extent-api.md) and grays out everything else: one Polygon whose
 // first path is the whole map and whose other paths are the extent's
 // rings, so the dataset's islands are cut out of the shading and any
 // hole inside them shaded again. The mask takes no clicks, so a click or
@@ -609,8 +609,8 @@ async function evaluatePoint(lat, lon) {
 }
 
 // drawPoint draws a line from the point to each tower of the reply,
-// coloured by the tower's best signal (solid for line of sight, dashed
-// for NLOS, grey dotted when nothing reaches the point), marks the point
+// colored by the tower's best signal (solid for line of sight, dashed
+// for NLOS, gray dotted when nothing reaches the point), marks the point
 // with a dot, opens a card beside it with one row per tower and puts the
 // full radio table in the panel. The card is a draggable advanced marker
 // (an InfoWindow cannot be moved), so it can be pulled off the lines.
@@ -645,7 +645,7 @@ function drawPoint(reply, request, at, weak) {
   // The wheel scrolls the card, not the map under it.
   card.addEventListener("wheel", (ev) => ev.stopPropagation());
   // An advanced marker's own element is a box the size of its content
-  // with its bottom centre at the position, and it is what the browser
+  // with its bottom center at the position, and it is what the browser
   // focuses and outlines on a drag. The content is therefore a zero-size
   // anchor at the point, with the card (and the dot) placed from it in
   // CSS, so the box never shows as an empty outline beside the card.
@@ -757,7 +757,7 @@ function pointContent(reply, request, at, rows, { towersOnly }) {
   }
   table.append(tbody);
   box.append(table);
-  box.append(el("p", { className: "muted" }, "Lines: solid for line of sight, dashed for a non-line-of-sight path, grey dotted when nothing reaches the point. To tower is the bearing from the point, clockwise from true north."));
+  box.append(el("p", { className: "muted" }, "Lines: solid for line of sight, dashed for a non-line-of-sight path, gray dotted when nothing reaches the point. To tower is the bearing from the point, clockwise from true north."));
   return box;
 }
 
@@ -1192,7 +1192,7 @@ function resultContent(reply, point, { bestOnly = false } = {}) {
 
 // renderLegend draws the one key for the current mode: the signal palette
 // for patches, and for buildings either the coverage ramp or the signal
-// palette, depending on the colouring.
+// palette, depending on the coloring.
 function renderLegend() {
   const box = $("legend");
   box.replaceChildren();
@@ -1214,7 +1214,7 @@ function renderLegend() {
     sw(null, "no path / below threshold / water / trees", "nodata");
     return;
   }
-  if (options().colourBy === "coverage") {
+  if (options().colorBy === "coverage") {
     $("legendTitle").textContent = `Building coverage (cells at or above ${weak} dBm)`;
     for (const pct of [100, 75, 50, 25, 5]) sw(coverageColor(pct), `${pct}%`);
     sw(coverageColor(0), "0%");
@@ -1231,14 +1231,14 @@ function renderLegend() {
 
 // styleBuilding is the Data layer's style function: an outline while a
 // building waits for its reply, a fill by coverage or signal once it has
-// one, dark grey when the service skipped it.
+// one, dark gray when the service skipped it.
 function styleBuilding(feature) {
   const entry = buildingResults.get(feature.getProperty("id"));
   if (!entry) {
     return { strokeColor: "#1565c0", strokeWeight: 1, fillOpacity: 0, clickable: true };
   }
-  const { minSignalDbm, colourBy } = options();
-  const [r, g, b] = buildingColor(entry.result, { by: colourBy, weak: minSignalDbm });
+  const { minSignalDbm, colorBy } = options();
+  const [r, g, b] = buildingColor(entry.result, { by: colorBy, weak: minSignalDbm });
   return { strokeColor: "#333", strokeWeight: 0.5, fillColor: `rgb(${r},${g},${b})`, fillOpacity: 0.65, clickable: true };
 }
 
@@ -1261,7 +1261,7 @@ function mapHasBuildings() {
 
 // evaluateBuildings selects the footprints within the radius of the
 // ticked towers, or inside the drawn window, draws them as outlines and
-// sends them to the service in batches of neighbours, one request at a
+// sends them to the service in batches of neighbors, one request at a
 // time, filling each building as its reply arrives.
 async function evaluateBuildings() {
   const towers = TOWERS.filter((t) => enabled.has(t.id));
@@ -1273,7 +1273,7 @@ async function evaluateBuildings() {
   if (!byWindow && !(opts.buildingRadius > 0)) return show("buildingError", "the radius must be positive");
   if (byWindow && !windowBounds) return show("buildingError", "draw a window first: press Draw window (or hold Shift) and drag on the map");
   if (!checkFlags(opts, "buildingError")) return;
-  const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, toMetres(opts.buildingRadius, UNITS));
+  const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, toMeters(opts.buildingRadius, UNITS));
   if (selected.length === 0) return show("buildingError", byWindow ? "no buildings in the window" : `no buildings within ${opts.buildingRadius} ${lengthUnit(UNITS)} of the ticked towers`);
   clearBuildings();
   const ctl = new AbortController();
@@ -1535,7 +1535,7 @@ async function start() {
     renderLegend();
     restyleBuildings();
   });
-  $("colourBy").addEventListener("change", restyleBuildings);
+  $("colorBy").addEventListener("change", restyleBuildings);
   for (const id of ["enableLOS", "enableNLOS"]) {
     $(id).addEventListener("change", () => {
       renderLegend();

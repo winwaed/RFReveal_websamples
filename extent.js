@@ -1,5 +1,5 @@
 // The elevation extent (docs/extent-api.md): the service's GeoJSON
-// Feature of the area its dataset covers, drawn on the map as a grey
+// Feature of the area its dataset covers, drawn on the map as a gray
 // mask over everything outside it. Pure functions apart from
 // fetchExtent, so they are testable in Node (see test/extent.test.js).
 

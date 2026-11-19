@@ -1,42 +1,42 @@
 // Length units of the page: "imperial" (feet and miles, the service's
-// default) or "metric" (metres and kilometres). The setting is `units` in
-// config.js; every request carries it, the service computes in metres and
+// default) or "metric" (meters and kilometers). The setting is `units` in
+// config.js; every request carries it, the service computes in meters and
 // answers in the request's units, and the page shows what it gets. The
 // towers file declares its own units (`units`, metric by default) and is
 // converted to the page's when loaded. Page-local geometry (the radius
-// circle, the building radius, the window size) is in metres and converts
+// circle, the building radius, the window size) is in meters and converts
 // at the edges.
 
 export const FT_PER_M = 3.28084;
 export const MI_PER_KM = 0.621371;
 
 const NAMES = {
-  metric: { length: "m", distance: "km", area: "km²", long: "metres and kilometres" },
+  metric: { length: "m", distance: "km", area: "km²", long: "meters and kilometers" },
   imperial: { length: "ft", distance: "mi", area: "mi²", long: "feet and miles" },
 };
 
-// normaliseUnits checks a units setting and returns it; undefined means
+// normalizeUnits checks a units setting and returns it; undefined means
 // the service's default, imperial.
-export function normaliseUnits(u) {
+export function normalizeUnits(u) {
   if (u === undefined || u === null || u === "") return "imperial";
   if (u !== "metric" && u !== "imperial") throw new Error(`units must be "metric" or "imperial", not ${JSON.stringify(u)}`);
   return u;
 }
 
-export const lengthUnit = (u) => NAMES[normaliseUnits(u)].length;
-export const distanceUnit = (u) => NAMES[normaliseUnits(u)].distance;
-export const areaUnit = (u) => NAMES[normaliseUnits(u)].area;
-export const unitsName = (u) => NAMES[normaliseUnits(u)].long;
+export const lengthUnit = (u) => NAMES[normalizeUnits(u)].length;
+export const distanceUnit = (u) => NAMES[normalizeUnits(u)].distance;
+export const areaUnit = (u) => NAMES[normalizeUnits(u)].area;
+export const unitsName = (u) => NAMES[normalizeUnits(u)].long;
 
-// toMetres and fromMetres convert a length (feet or metres) to and from
-// metres; kmToDistance converts kilometres to the units' distance.
-export const toMetres = (v, u) => (normaliseUnits(u) === "imperial" ? v / FT_PER_M : v);
-export const fromMetres = (m, u) => (normaliseUnits(u) === "imperial" ? m * FT_PER_M : m);
-export const kmToDistance = (km, u) => (normaliseUnits(u) === "imperial" ? km * MI_PER_KM : km);
-export const km2ToArea = (km2, u) => (normaliseUnits(u) === "imperial" ? km2 * MI_PER_KM * MI_PER_KM : km2);
+// toMeters and fromMeters convert a length (feet or meters) to and from
+// meters; kmToDistance converts kilometers to the units' distance.
+export const toMeters = (v, u) => (normalizeUnits(u) === "imperial" ? v / FT_PER_M : v);
+export const fromMeters = (m, u) => (normalizeUnits(u) === "imperial" ? m * FT_PER_M : m);
+export const kmToDistance = (km, u) => (normalizeUnits(u) === "imperial" ? km * MI_PER_KM : km);
+export const km2ToArea = (km2, u) => (normalizeUnits(u) === "imperial" ? km2 * MI_PER_KM * MI_PER_KM : km2);
 
-// The radio fields the service reads as lengths (feet or metres) and as
-// distances (miles or kilometres).
+// The radio fields the service reads as lengths (feet or meters) and as
+// distances (miles or kilometers).
 export const LENGTH_FIELDS = ["height", "height_rooftop", "apclearance"];
 export const DISTANCE_FIELDS = ["range", "max_distance"];
 
@@ -44,8 +44,8 @@ export const DISTANCE_FIELDS = ["range", "max_distance"];
 // distances converted from one units setting to the other (unchanged
 // when they are the same), rounded to three decimals.
 export function convertTowers(towers, from, to) {
-  from = normaliseUnits(from);
-  to = normaliseUnits(to);
+  from = normalizeUnits(from);
+  to = normalizeUnits(to);
   if (from === to) return towers;
   const len = from === "metric" ? FT_PER_M : 1 / FT_PER_M;
   const dist = from === "metric" ? MI_PER_KM : 1 / MI_PER_KM;

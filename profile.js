@@ -145,7 +145,7 @@ function runs(count, keep) {
 
 // chartSVG draws the reply into an SVG string for the given layout. It
 // draws, back to front: the clearance zones, the ground (brown) and the
-// clutter above it (grey, green where the bin is mostly vegetation), the
+// clutter above it (gray, green where the bin is mostly vegetation), the
 // first Fresnel zone as a translucent band with the 0.6 F1 boundary
 // dashed, the direct line, the antennas, the tightest sample and the
 // Bullington construction. Values are the reply's own (the request's
@@ -177,7 +177,7 @@ export function chartSVG(reply, L) {
     parts.push(`<polygon class="ground" points="${pt(x(b.distance[first]), bottom)} ${pts.join(" ")} ${pt(x(b.distance[last]), bottom)}"/>`);
   }
   // Clutter: surface down to the ground (or the bottom where the ground
-  // has no data), grey, then the vegetation runs in green.
+  // has no data), gray, then the vegetation runs in green.
   const base = (i) => (b.ground[i] != null ? gy(i) : bottom);
   const clutter = (keep, cls) => {
     for (const run of runs(b.count, (i) => b.surface[i] != null && keep(i))) {
@@ -228,7 +228,7 @@ export function chartSVG(reply, L) {
     const anchor = tx > L.pad.left + L.plotW * 0.75 ? "end" : "start";
     parts.push(`<text class="label" x="${(tx + (anchor === "end" ? -8 : 8)).toFixed(1)}" y="${(ty + 14).toFixed(1)}" text-anchor="${anchor}">${label}</text>`);
   }
-  // Antennas: a stem from the cell to the antenna centre, and a dot.
+  // Antennas: a stem from the cell to the antenna center, and a dot.
   if (reply.ap) {
     const foot = reply.ap.ground != null ? reply.ap.ground : reply.ap.antenna - reply.ap.height;
     parts.push(`<line class="mast" x1="${x(0).toFixed(1)}" y1="${y(foot).toFixed(1)}" x2="${x(0).toFixed(1)}" y2="${y(reply.ap.antenna).toFixed(1)}"/>`);
@@ -267,7 +267,7 @@ export function profileTitle(reply) {
   return s;
 }
 
-// profileCaption summarises the figures under the chart.
+// profileCaption summarizes the figures under the chart.
 export function profileCaption(reply) {
   const u = unitLabel(reply);
   if (reply.skipped) return `Skipped (${reply.skipped.replace(/_/g, " ")}).`;
@@ -297,7 +297,7 @@ export function profileCaption(reply) {
   return parts.join(" · ");
 }
 
-// binAt is the index of the bin whose centre is nearest the chart pixel
+// binAt is the index of the bin whose center is nearest the chart pixel
 // px, or -1 outside the plot.
 export function binAt(reply, L, px) {
   const b = reply.bins;
@@ -382,7 +382,7 @@ export function covers(reply, view, plotW) {
 }
 
 // fetchWindow is the request ({ range, samples }) for a view: the longest
-// stretch the service can return at the step the view needs, centred on
+// stretch the service can return at the step the view needs, centerd on
 // the view and kept inside the path, so that panning and zooming nearby
 // are drawn from the one reply. The whole path (view null, or a window
 // that would reach both ends) is asked for without a range.
@@ -422,7 +422,7 @@ export function viewOf(reply, view) {
   return { ...reply, bins };
 }
 
-// panRange is the range shifted along the path by delta (positive towards
+// panRange is the range shifted along the path by delta (positive toward
 // the receiver), kept inside the path. Returns null when nothing changes:
 // the whole path is shown, or the range is already at that end.
 export function panRange(current, distance, delta) {

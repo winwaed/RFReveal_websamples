@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const { FIELDS, convertTowers, distanceUnit, fromMetres, km2ToArea, kmToDistance, lengthUnit, normaliseUnits, toMetres, unitsName } = await import("../units.js");
+const { FIELDS, convertTowers, distanceUnit, fromMeters, km2ToArea, kmToDistance, lengthUnit, normalizeUnits, toMeters, unitsName } = await import("../units.js");
 
-test("normaliseUnits defaults to imperial and refuses anything else", () => {
-  assert.equal(normaliseUnits(undefined), "imperial");
-  assert.equal(normaliseUnits(""), "imperial");
-  assert.equal(normaliseUnits("metric"), "metric");
-  assert.throws(() => normaliseUnits("feet"), /metric.*imperial/);
+test("normalizeUnits defaults to imperial and refuses anything else", () => {
+  assert.equal(normalizeUnits(undefined), "imperial");
+  assert.equal(normalizeUnits(""), "imperial");
+  assert.equal(normalizeUnits("metric"), "metric");
+  assert.throws(() => normalizeUnits("feet"), /metric.*imperial/);
 });
 
 test("unit names", () => {
@@ -19,9 +19,9 @@ test("unit names", () => {
 });
 
 test("conversions", () => {
-  assert.equal(toMetres(10, "metric"), 10);
-  assert.ok(Math.abs(toMetres(FIELDS.imperial.radius.value, "imperial") - 19.81) < 0.01);
-  assert.ok(Math.abs(fromMetres(100, "imperial") - 328.084) < 0.001);
+  assert.equal(toMeters(10, "metric"), 10);
+  assert.ok(Math.abs(toMeters(FIELDS.imperial.radius.value, "imperial") - 19.81) < 0.01);
+  assert.ok(Math.abs(fromMeters(100, "imperial") - 328.084) < 0.001);
   assert.ok(Math.abs(kmToDistance(20, "imperial") - 12.427) < 0.001);
   assert.ok(Math.abs(km2ToArea(3240, "imperial") - 1251) < 1);
 });
@@ -45,8 +45,8 @@ test("FIELDS give the same inputs in both units, within the service's limits", (
   assert.deepEqual(Object.keys(FIELDS.metric), Object.keys(FIELDS.imperial));
   for (const [id, m] of Object.entries(FIELDS.metric)) {
     const i = FIELDS.imperial[id];
-    assert.ok(Math.abs(toMetres(i.value, "imperial") - m.value) / m.value < 0.1, `${id} default`);
-    assert.ok(toMetres(i.max, "imperial") <= m.max + 0.01, `${id} max`);
-    assert.ok(toMetres(i.min, "imperial") >= m.min - 0.01, `${id} min`);
+    assert.ok(Math.abs(toMeters(i.value, "imperial") - m.value) / m.value < 0.1, `${id} default`);
+    assert.ok(toMeters(i.max, "imperial") <= m.max + 0.01, `${id} max`);
+    assert.ok(toMeters(i.min, "imperial") >= m.min - 0.01, `${id} min`);
   }
 });

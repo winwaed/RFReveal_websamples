@@ -4,7 +4,7 @@ rfreveal-map is the web demo for [RF Reveal](https://rfreveal.com/), and
 consists of a single HTML page that puts your towers on a Google map and
 asks the RF Reveal service what they cover. Click the map for a coverage
 **patch** drawn over the imagery,
-switch to **Buildings** to colour every footprint in an area by its
+switch to **Buildings** to color every footprint in an area by its
 coverage, or right-click anywhere for a **point** link budget with a **path
 profile** from each tower. There is no no build step or npm, and only uses
 plain HTML, CSS and ES modules with one vendored library (geotiff.js), and
@@ -13,13 +13,13 @@ two data files that you can replace with your own.
 The page is open source under the BSD 3-Clause License. The RF Reveal
 service it talks to is commercial software that runs in Docker on your
 own machine with the elevation data that you licensed; "RF Reveal" is a
-product name the licence does not grant. Everything the demo shows is
+product name the license does not grant. Everything the demo shows is
 computed by the service: the page only draws it.
 
 - **[Try it](#try-it)**: run the page against a service in a few minutes.
 - **[Run it for real](#run-it-for-real)**: your towers, your footprints,
   your network.
-- **[Customise it](#customise-it)**: change the page or build your own
+- **[Customize it](#customize-it)**: change the page or build your own
   client on the same requests.
 - **[What the page does](#what-the-page-does)**: every control, mode and
   figure.
@@ -41,7 +41,7 @@ file server (Python 3 is enough).
    docker run --rm -p 127.0.0.1:8080:8080 \
      -e RFREVEAL_CORS_ORIGIN=http://localhost:8000 \
      -v /path/to/your/elevation:/data/elevation:ro \
-     -v /path/to/your/licence.json:/data/licence.json:ro \
+     -v /path/to/your/license.json:/data/license.json:ro \
      rfreveald:<version>
    ```
 
@@ -89,7 +89,7 @@ file server (Python 3 is enough).
    - **Click** the map: a coverage patch at that point from the ticked
      towers, with a popup of the figures.
    - **Buildings** mode, **Evaluate buildings**: every footprint around
-     the towers, or inside a window you draw, coloured by coverage.
+     the towers, or inside a window you draw, colored by coverage.
    - **Right-click**: the link budget from every tower to that point,
      with a **Profile** link per tower that opens the path profile.
    - **Debug** (top right): the last request and reply, and the two
@@ -104,7 +104,7 @@ touching any of the scripts (`config.js` can point `towersUrl` at another file).
 The units can be different to the display units in `config.js`.
 The units cover the ranges, `apclearance`, and heights.
 
-The `towers.json` file also specifies the map centre, `radio_defaults`
+The `towers.json` file also specifies the map center, `radio_defaults`
 defaults for each radio), and the actual tower definitions:
 
 ```json
@@ -183,12 +183,12 @@ Two data credits must appear where the map is shown: the footprints
 elevation (USGS 3DEP lidar processed by Winwaed Software Technology LLC).
 A one-line credit sits at the lower left of the map, and its **About**
 link, like the one under the panel, opens a dialog with the full credits
-and links, the demo's licence, and the service's version and dataset
+and links, the demo's license, and the service's version and dataset
 read from `GET /api/v1/health`. If you replace the footprints or the
 elevation data, change the credit line in `app.js` (`addCreditControl`)
 and the dialog in `index.html`.
 
-## Customise it
+## Customize it
 
 ### Layout of the code
 
@@ -206,7 +206,7 @@ a browser; `app.js` holds the page state and the Google Maps calls.
   transparent, NLOS pixels hatched), the path flags.
 - `building.js`: loading and checking `buildings.json`, selection by
   radius or window, batching by 200 m squares along a Hilbert curve, the
-  request, the colours, the per-tower best radios.
+  request, the colors, the per-tower best radios.
 - `point.js`, `profile.js`, `extent.js`: the right-click query, the path
   profile chart (SVG as a string, scales, zoom arithmetic) and the
   dataset mask, each with its request builder.
@@ -214,7 +214,7 @@ a browser; `app.js` holds the page state and the Google Maps calls.
 - `towers.js`: reads and validates `towers.json`.
 - `config.js` and `config.local.js`: settings (below).
 - `tools/`: the footprint scripts and `serve.py`. `test/`: Node tests.
-- `vendor/`: geotiff.js 2.1.3 with its MIT licence.
+- `vendor/`: geotiff.js 2.1.3 with its MIT license.
 
 `node --test` (Node 20 or newer, in this directory) runs the tests; the
 raster test talks to a service at `RFREVEALD_URL` (default
@@ -232,8 +232,8 @@ it). Reload with the cache bypassed (Ctrl+Shift+R) after an update.
 | `mapId` | Map ID; `DEMO_MAP_ID` works for development, advanced markers need one. |
 | `apiBase` | Where the service listens (default `http://localhost:8080`). |
 | `towersUrl`, `buildingsUrl` | The data files. |
-| `units` | `"imperial"` (feet and miles, the service's default) or `"metric"` (metres and kilometres): the units of the panel's fields, every request and every figure shown. The towers file declares its own units and is converted. |
-| `reverseSignalColours` | `true` draws red as the strongest signal and green as the weakest, the order cnHeat uses, in every palette and the coverage ramp. |
+| `units` | `"imperial"` (feet and miles, the service's default) or `"metric"` (meters and kilometers): the units of the panel's fields, every request and every figure shown. The towers file declares its own units and is converted. |
+| `reverseSignalColors` | `true` draws red as the strongest signal and green as the weakest, the order cnHeat uses, in every palette and the coverage ramp. |
 
 ### Building your own client
 
@@ -244,7 +244,7 @@ The page is a worked example of the four requests: `POST /api/v1/patch`,
 shows the exact JSON sent and received, which is the quickest way to
 learn the shapes. The API references are in the RF Reveal documentation.
 Points worth copying: send building batches as compact blocks of
-neighbours (the service clusters each batch in one projection zone);
+neighbors (the service clusters each batch in one projection zone);
 hold one profile reply at the most bins the service gives and redraw
 views from it, asking again only when a view needs finer bins; draw the
 patch raster as a `GroundOverlay` straight from the service's Web
@@ -255,7 +255,7 @@ Mercator GeoTIFF, which needs no reprojection on a Google map.
 ### Patches
 
 Left click performs a query of the selected towers to produce a patch
-centred on the click point. Options include patch radius and minimum signal.
+centerd on the click point. Options include patch radius and minimum signal.
 
 The patch RSL is drawn over the map with a white circle at the patch radius.
 Colors vary from green (strongest signal) to red (weakest). Hatching shows an
@@ -288,7 +288,7 @@ weakest stop, and the hatch.
 ### Buildings
 
 The Buildings mode evaluates footprints instead of patches. **Select**
-chooses them: every footprint whose centre is within a radius (default
+chooses them: every footprint whose center is within a radius (default
 1000 m) of a ticked tower, or inside a **window** you draw. To draw,
 press **Draw window** and drag with the left mouse button, or hold
 **Shift** and drag at any time; the drag lands on a transparent layer
@@ -298,10 +298,10 @@ drag, a new window replaces the old, **Remove window** takes it off; the
 window's size and building count show under the field.
 
 **Evaluate buildings** draws the selection as outlines and sends it in
-batches of 300 neighbours, one request at a time. As each reply arrives
+batches of 300 neighbors, one request at a time. As each reply arrives
 the buildings fill: by the percentage of their 1 m cells with a signal at
-or above the minimum from any radio (grey 0 %, red low, green 100 %), or
-by the third-strongest cell's signal in the palette (**Colour by**). The
+or above the minimum from any radio (gray 0 %, red low, green 100 %), or
+by the third-strongest cell's signal in the palette (**Color by**). The
 receiver is the *above rooftop* height at every cell, since on a
 footprint the surface is the roof. Tree cells over a roof count against
 the coverage, never for it. **Stop** ends the run after the current
@@ -310,14 +310,14 @@ Clicking a building opens its figures (cells, combined coverage and
 third-strongest cell, best and strongest radio, one row per tower) in a
 popup anchored to its northern edge, and every radio in the panel. A
 building a ticked tower stands in hosts an access point: the service
-excludes it and it stays dark grey.
+excludes it and it stays dark gray.
 
 ### Point query
 
 A right click anywhere, in either mode, asks for the link budget from
 every radio of the ticked towers to a receiver at that point, at the
-heights of the current mode. A line is drawn to each tower, coloured by
-its best signal: solid for line of sight, dashed for NLOS, grey dotted
+heights of the current mode. A line is drawn to each tower, colored by
+its best signal: solid for line of sight, dashed for NLOS, gray dotted
 when nothing reaches the point. A card beside the point lists one row per
 tower with its best radio, level, path, distance and the bearing from
 the point to the tower (to aim a subscriber antenna); the panel lists
@@ -330,7 +330,7 @@ right click, removes everything.
 Every row of the point card and of the panel's radio table has a
 **Profile** link. It opens a drawer along the bottom of the map with the
 path from that radio to the point: the ground in brown and the clutter
-above it in grey (green where a bin is mostly vegetation), lifted by the
+above it in gray (green where a bin is mostly vegetation), lifted by the
 Earth bulge so the radio line is straight; the first Fresnel zone as a
 blue band with the 0.6 F1 boundary dashed; both antennas on their masts;
 the AP and receiver clearance zones; the tightest sample ringed in orange
@@ -367,31 +367,18 @@ in support requests.
 
 The credit line at the lower left of the map and the **About and data
 credits** link under the panel open the About dialog: the demo and its
-licence, the service's version and dataset, and the data credits with
+license, the service's version and dataset, and the data credits with
 links (Credits, above).
 
 ## Changelog
 
-The sample version is in the page footer and in every module URL.
-
-- **0.8.23** (2026-11-19): metric and imperial units (`units` in `config.js`, `units` in the towers file); `tools/fetch-ms-buildings.py` renamed `fetch-buildings.py`.
-- **0.8.22** (2026-11-19): README rewritten for three audiences.
-- **0.8.21** (2026-11-18): on-map data credit line and the About dialog.
-- **0.8.20** (2026-11-18): `fetch-buildings.py --extent` keeps the
-  footprints inside the service's elevation extent.
-- **0.8.19** (2026-11-16): window selection drawn on a transient layer
-  (Draw window or Shift + drag, Esc cancels, Remove window), so the map's
-  own gestures are untouched. 0.8.16 to 0.8.18 were earlier attempts
-  that disabled panning or used the middle button.
-- **0.8.15** (2026-11-15, service 0.12.0): Save request + reply and
-  Diagnostics report in the Debug pane.
-- **0.8.14** (2026-11-12): `reverseSignalColours`.
-- **0.8.12** (2026-11-11): first public release, BSD-3-Clause.
+Entries start with the first release of RF Reveal. The sample version is
+shown in the page footer and in every module URL.
 
 ## Notes
 
-A pixel of the raster is one ground metre; at Wichita Falls' latitude
-that is 1.2 projected metres, and the service's grid is centred on the
+A pixel of the raster is one ground meter; at Wichita Falls' latitude
+that is 1.2 projected meters, and the service's grid is centerd on the
 clicked point. The service returns the raster in Web Mercator
 (EPSG:3857), the projection Google Maps draws in, so the overlay needs
 no reprojection. Vector shapes (circles, lines, the window) draw above

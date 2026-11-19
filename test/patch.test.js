@@ -16,7 +16,7 @@ const require = createRequire(import.meta.url);
 // Under require() the UMD bundle exports instead of setting the global.
 globalThis.GeoTIFF = require("../vendor/geotiff-2.1.3.js");
 
-const { PATH_LOS, PATH_NLOS, buildRequest, decodeRaster, flagsValid, maskUnder, mercatorToLatLon, mergeStrongest, pathFlags, pixelIndex, rasterToRGBA, setSignalColourReversed, signalColor, signalColourReversed } =
+const { PATH_LOS, PATH_NLOS, buildRequest, decodeRaster, flagsValid, maskUnder, mercatorToLatLon, mergeStrongest, pathFlags, pixelIndex, rasterToRGBA, setSignalColorReversed, signalColor, signalColorReversed } =
   await import("../patch.js");
 const { expandTowers } = await import("../towers.js");
 const TOWERS_DOC = JSON.parse(await readFile(new URL("../towers.json", import.meta.url), "utf8"));
@@ -42,7 +42,7 @@ test("towers.json expands to the three sample towers", () => {
   const { towers, center: c } = expandTowers(doc);
   assert.deepEqual(towers[0].radios[0], { azimuth_deg: 90, tilt_deg: -5, range: 5, id: "t-90", name: "90°", height: 10 });
   assert.deepEqual(towers[0].radios[1], { azimuth_deg: 180, tilt_deg: -2, range: 5, id: "t-180", name: "180°", height_rooftop: 3 });
-  assert.deepEqual(c, { lat: 1, lng: 2 }, "the centre falls back to the first tower");
+  assert.deepEqual(c, { lat: 1, lng: 2 }, "the center falls back to the first tower");
   // Bad files are refused with the place named.
   assert.throws(() => expandTowers({ towers: [] }), /non-empty/);
   assert.throws(() => expandTowers({ towers: [{ id: "a", name: "A", lat: 0, lon: 0, radios: [{ azimuth_deg: 0 }] }] }), /no height/);
@@ -102,7 +102,7 @@ test("mercatorToLatLon matches PROJ control points", () => {
 });
 
 test("signalColor runs green to red", () => {
-  assert.equal(signalColourReversed(), false, "not reversed by default");
+  assert.equal(signalColorReversed(), false, "not reversed by default");
   const [r1, g1] = signalColor(-45);
   const [r2, g2] = signalColor(-100);
   assert.ok(g1 > r1, "strong is green");
@@ -113,16 +113,16 @@ test("signalColor reversed runs red to green (the cnHeat order)", () => {
   const strong = signalColor(-45);
   const weak = signalColor(-100);
   const mid = signalColor(-72.5);
-  setSignalColourReversed(true);
+  setSignalColorReversed(true);
   try {
-    assert.equal(signalColourReversed(), true);
-    assert.deepEqual(signalColor(-45), weak, "strong takes the weak colour");
-    assert.deepEqual(signalColor(-100), strong, "weak takes the strong colour");
+    assert.equal(signalColorReversed(), true);
+    assert.deepEqual(signalColor(-45), weak, "strong takes the weak color");
+    assert.deepEqual(signalColor(-100), strong, "weak takes the strong color");
     assert.deepEqual(signalColor(-72.5), mid, "the middle is unchanged");
     const [r, g] = signalColor(-45);
     assert.ok(r > g, "strong is red");
   } finally {
-    setSignalColourReversed(false);
+    setSignalColorReversed(false);
   }
   assert.deepEqual(signalColor(-45), strong, "the switch turns back off");
 });
@@ -144,7 +144,7 @@ test("rasterToRGBA hatches non-line-of-sight pixels", () => {
   const px = (x, y) => Array.from(img.data.slice((y * img.width + x) * 4, (y * img.width + x) * 4 + 3));
   const plain = px(0, 0);
   assert.deepEqual(px(1, 0), plain, "the LOS cell is uniform");
-  assert.deepEqual(px(5, 0), plain, "an NLOS pixel off the hatch line keeps the ramp colour");
+  assert.deepEqual(px(5, 0), plain, "an NLOS pixel off the hatch line keeps the ramp color");
   const dark = px(4, 0); // x + y = 4: on the hatch line
   assert.ok(dark.every((c, i) => c < plain[i] || plain[i] === 0), `hatch line is darker: ${dark} vs ${plain}`);
   assert.deepEqual(px(7, 1), dark, "x + y = 8 is the next line");
@@ -227,7 +227,7 @@ test("the path type follows the pixel that wins a merge", () => {
   const m2 = mergeStrongest(d, [e]);
   assert.equal(m2.paths[0], PATH_LOS);
   assert.equal(m2.paths[3], PATH_NLOS);
-  // A new one-band patch over a two-band one gets a synthesised band:
+  // A new one-band patch over a two-band one gets a synthesized band:
   // its covered pixels LOS, its nodata pixels 255 unless an earlier
   // patch fills them.
   const f = grid(2, 8, 4, 4, (i) => (i === 0 ? 255 : 65));
@@ -255,9 +255,9 @@ test("decodeRaster georeferences a live reply", async (t) => {
   assert.equal(d.width, 201);
   assert.equal(d.height, 201);
   assert.equal(d.values.length, 201 * 201);
-  // The 201 m patch is centred on the request point (Mercator is
-  // conformal, so the midpoint of the bounds is the centre pixel's centre
-  // in longitude; in latitude it is within a few millimetres of it).
+  // The 201 m patch is centerd on the request point (Mercator is
+  // conformal, so the midpoint of the bounds is the center pixel's center
+  // in longitude; in latitude it is within a few millimeters of it).
   const midLat = (d.bounds.north + d.bounds.south) / 2;
   const midLon = (d.bounds.east + d.bounds.west) / 2;
   assert.ok(Math.abs(midLat - 33.9137) < 1e-6, `lat ${midLat}`);
@@ -269,7 +269,7 @@ test("decodeRaster georeferences a live reply", async (t) => {
   assert.equal(reply.raster.bands, 2);
   assert.equal(reply.enable_los, 1);
   assert.equal(reply.enable_nlos, 1);
-  assert.equal(reply.rxclearance, 3, "the service default clearance is echoed in metres");
+  assert.equal(reply.rxclearance, 3, "the service default clearance is echoed in meters");
   assert.ok(d.paths && d.paths.length === d.values.length, "a path band of the same size");
   assert.ok(d.paths.some((p) => p === PATH_LOS) && d.paths.some((p) => p === PATH_NLOS), "both path types occur in the sample patch");
   for (let k = 0; k < d.values.length; k++) {

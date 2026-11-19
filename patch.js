@@ -4,7 +4,7 @@
 
 // buildRequest assembles a POST /api/v1/patch body for a click at (lat, lon)
 // using the enabled towers. Lengths are in the request's units (units.js):
-// feet or metres for heights and the radius, miles or kilometres for ranges.
+// feet or meters for heights and the radius, miles or kilometers for ranges.
 // atmosphere is "none" (the default, free-space loss only), "dry" or
 // "wet" (gas loss plus the rain rate exceeded for 95 % or 5 % of rainy
 // time at each tower, see docs/patch-api.md 4.9); none omits options.
@@ -97,7 +97,7 @@ export async function fetchJSON(base, path, request, { signal, trace, method = "
   return body;
 }
 
-// mercatorToLatLon converts EPSG:3857 metres to WGS 84 degrees.
+// mercatorToLatLon converts EPSG:3857 meters to WGS 84 degrees.
 const EARTH_R = 6378137;
 export function mercatorToLatLon(x, y) {
   const lon = (x / EARTH_R) * (180 / Math.PI);
@@ -155,7 +155,7 @@ export async function decodeRaster(raster) {
 // (mask). One patch at -70 dBm and two overlapping patches at -70 dBm
 // therefore look the same.
 
-// mercatorBounds is the patch's extent in EPSG:3857 metres.
+// mercatorBounds is the patch's extent in EPSG:3857 meters.
 export function mercatorBounds(d) {
   const { x0, y0, dx, dy } = d.mercator;
   return { xmin: x0, xmax: x0 + d.width * dx, ymax: y0, ymin: y0 + d.height * dy };
@@ -228,7 +228,7 @@ function pathsOf(d, n) {
 }
 
 // maskUnder returns d's draw mask (1 draw, 0 hide) with the pixels whose
-// centres lie inside newer's extent hidden, starting from d's current mask
+// centers lie inside newer's extent hidden, starting from d's current mask
 // when it has one. Returns null when nothing changes.
 export function maskUnder(d, newer) {
   if (!overlaps(d, newer)) return null;
@@ -248,15 +248,15 @@ export function maskUnder(d, newer) {
 
 // signalColor maps a received level in dBm onto a green (strong) to red
 // (at the threshold) ramp, or red (strong) to green when the scale is
-// reversed (setSignalColourReversed; the config's reverseSignalColours,
+// reversed (setSignalColorReversed; the config's reverseSignalColors,
 // the order cnHeat uses). Returns [r, g, b].
 let reversed = false;
 
-export function setSignalColourReversed(on) {
+export function setSignalColorReversed(on) {
   reversed = Boolean(on);
 }
 
-export function signalColourReversed() {
+export function signalColorReversed() {
   return reversed;
 }
 
@@ -282,13 +282,13 @@ function hslToRgb(h, s, l) {
 }
 
 // rasterToRGBA paints the byte values (negated dBm; nodata transparent) into
-// an RGBA buffer, enlarged `scale` times with nearest-neighbour sampling so
+// an RGBA buffer, enlarged `scale` times with nearest-neighbor sampling so
 // the browser does not blur the cells when it stretches the image. It
-// draws the merged values and honours the mask when the patch has them.
+// draws the merged values and honors the mask when the patch has them.
 // Pixels reached by a non-line-of-sight path (path band 2) keep the same
-// colour ramp but are hatched: every `hatch`-th diagonal line of image
+// color ramp but are hatched: every `hatch`-th diagonal line of image
 // pixels is darkened, so the hatching is visible at any zoom while the
-// colour still reads. hatch 0 disables it.
+// color still reads. hatch 0 disables it.
 export function rasterToRGBA(decoded, { scale = 8, alpha = 170, weak = -100, hatch = 4 } = {}) {
   const { width, height, nodata, mask } = decoded;
   const values = decoded.merged || decoded.values;

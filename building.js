@@ -1,6 +1,6 @@
 // The buildings mode: selecting the footprints near the ticked towers,
 // batching them for the building endpoint, building the requests, and
-// colouring the results. Pure functions apart from the two fetches, so
+// coloring the results. Pure functions apart from the two fetches, so
 // they are testable in Node (see test/building.test.js).
 //
 // buildings.json (made by tools/compact-buildings.py from OpenStreetMap)
@@ -8,7 +8,7 @@
 // [[[lon, lat], ...], ...]: the first ring the outer boundary, the rest
 // holes, every ring closed (last position repeats the first).
 
-import { fetchJSON, pathFlags, signalColor, signalColourReversed } from "./patch.js";
+import { fetchJSON, pathFlags, signalColor, signalColorReversed } from "./patch.js";
 
 // loadBuildings fetches the file and checks its shape.
 export async function loadBuildings(url = "buildings.json") {
@@ -52,8 +52,8 @@ export function ringCentroid(ring) {
   return { lat: lat / pts.length, lon: lon / pts.length };
 }
 
-// distanceM is the ground distance between two points in metres
-// (equirectangular approximation, fine over a few kilometres).
+// distanceM is the ground distance between two points in meters
+// (equirectangular approximation, fine over a few kilometers).
 const EARTH_R = 6371000;
 export function distanceM(a, b) {
   const toRad = Math.PI / 180;
@@ -68,9 +68,9 @@ export function selectWithin(buildings, towers, radiusM) {
   return buildings.filter((b) => towers.some((t) => distanceM(b.centroid, { lat: t.lat, lon: t.lon }) <= radiusM));
 }
 
-// normaliseWindow puts two corners (any order) into a window
+// normalizeWindow puts two corners (any order) into a window
 // { south, west, north, east }, in degrees.
-export function normaliseWindow(a, b) {
+export function normalizeWindow(a, b) {
   return { south: Math.min(a.lat, b.lat), north: Math.max(a.lat, b.lat), west: Math.min(a.lon, b.lon), east: Math.max(a.lon, b.lon) };
 }
 
@@ -80,22 +80,22 @@ export function selectInWindow(buildings, w) {
   return buildings.filter((b) => b.centroid.lat >= w.south && b.centroid.lat <= w.north && b.centroid.lon >= w.west && b.centroid.lon <= w.east);
 }
 
-// windowSizeM is the window's width (along its middle) and height in metres.
+// windowSizeM is the window's width (along its middle) and height in meters.
 export function windowSizeM(w) {
   const mid = (w.south + w.north) / 2;
   return { width: distanceM({ lat: mid, lon: w.west }, { lat: mid, lon: w.east }), height: distanceM({ lat: w.south, lon: w.west }, { lat: w.north, lon: w.west }) };
 }
 
-// mercator projects to EPSG:3857 metres, for the batching grid.
+// mercator projects to EPSG:3857 meters, for the batching grid.
 const MERC_R = 6378137;
 export function mercator({ lat, lon }) {
   return { x: (MERC_R * lon * Math.PI) / 180, y: MERC_R * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) };
 }
 
 // batches groups the buildings by a bucketM grid square of their centroid
-// (in Web Mercator metres), orders the squares along a Hilbert curve and
+// (in Web Mercator meters), orders the squares along a Hilbert curve and
 // cuts the sequence into batches of at most max buildings, so each
-// request to the service holds neighbours: the server clusters each batch
+// request to the service holds neighbors: the server clusters each batch
 // in its own zone, and compact batches make full clusters. The curve
 // keeps consecutive squares adjacent, so every batch covers a compact
 // area and the batches take similar times; row-by-row order made the
@@ -172,18 +172,18 @@ export function toFeature(b) {
 }
 
 // coverageColor maps a coverage percentage onto the red (none) to green
-// (all) ramp the signal colours use, so the two legends read alike; when
-// the signal scale is reversed (config reverseSignalColours) it runs
-// green (none) to red (all) with it. Returns [r, g, b]; 0 % is grey.
+// (all) ramp the signal colors use, so the two legends read alike; when
+// the signal scale is reversed (config reverseSignalColors) it runs
+// green (none) to red (all) with it. Returns [r, g, b]; 0 % is gray.
 export function coverageColor(pct) {
   if (!(pct > 0)) return [158, 158, 158];
   let t = Math.min(1, Math.max(0, pct / 100));
-  if (signalColourReversed()) t = 1 - t;
+  if (signalColorReversed()) t = 1 - t;
   return hslToRgb(120 * t, 0.85, 0.42);
 }
 
 // buildingColor picks the fill for a building from its result: by
-// combined coverage, or by the combined rank signal (grey when null).
+// combined coverage, or by the combined rank signal (gray when null).
 export function buildingColor(result, { by = "coverage", weak = -100 } = {}) {
   if (!result || result.skipped) return [120, 120, 120];
   const c = result.combined || {};

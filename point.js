@@ -65,12 +65,12 @@ export function towerRows(reply) {
   });
 }
 
-// NO_PATH is the colour of a line to a tower nothing reaches the point from.
+// NO_PATH is the color of a line to a tower nothing reaches the point from.
 export const NO_PATH = [158, 158, 158];
 
-// lineStyle is the colour and dash of the line to a tower: the signal
+// lineStyle is the color and dash of the line to a tower: the signal
 // palette for a radio with a signal (the weak end at the minimum signal,
-// so a level below it is the weakest colour), grey when nothing reaches
+// so a level below it is the weakest color), gray when nothing reaches
 // the point; solid for line of sight, dashed for a non-line-of-sight
 // path, and dotted when there is no path at all.
 export function lineStyle(row, { weak = -100 } = {}) {
@@ -78,7 +78,7 @@ export function lineStyle(row, { weak = -100 } = {}) {
   return { color: signalColor(row.signal, { weak }), dash: row.path === "nlos" ? "dashed" : "solid" };
 }
 
-// rgb formats a colour triple for CSS and the Maps API.
+// rgb formats a color triple for CSS and the Maps API.
 export function rgb(c) {
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }

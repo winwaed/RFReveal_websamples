@@ -39,7 +39,7 @@ tr.skipped td { color: #999; }
 .popup p { margin: 4px 0; }
 .popup .hide { font: inherit; font-size: 12px; padding: 1px 10px; border: 1px solid #bbb; border-radius: 3px; background: #fff; cursor: pointer; }
 /* The point's card and dot hang off a zero-size anchor at the point (see
-   drawPoint in app.js): the card below and to the right, the dot centred.
+   drawPoint in app.js): the card below and to the right, the dot centerd.
    The card is wide enough for its table without a scrollbar. */
 .point-anchor { position: relative; width: 0; height: 0; }
 .point-card { position: absolute; left: 14px; top: 14px; width: max-content; max-width: 600px; max-height: 360px; background: #fff; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); padding: 6px 10px 8px; cursor: move; }
@@ -111,7 +111,7 @@ button.link { font: inherit; font-size: 12px; color: #1565c0; background: none; 
    untouched at every other time. The hidden attribute must win here too. */
 #windowLayer { position: absolute; inset: 0; z-index: 10; cursor: crosshair; background: transparent; touch-action: none; }
 #windowLayer[hidden] { display: none; }
-/* The on-map credit line (a Google Maps custom control at the bottom centre): the
+/* The on-map credit line (a Google Maps custom control at the bottom center): the
    ODbL asks for the footprints' credit where the map is shown, and the About
    dialog holds the full credits. */
 .credit { margin: 0 0 6px 10px; padding: 2px 8px; font: 11px/1.4 system-ui, sans-serif; color: #fff; background: rgba(0, 0, 0, 0.55); border-radius: 3px; white-space: nowrap; }

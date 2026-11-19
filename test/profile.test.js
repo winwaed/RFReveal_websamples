@@ -94,7 +94,7 @@ test("chartSVG: ground, clutter and vegetation runs, the zone, the line, the con
   const svg = chartSVG(reply, L);
   assert.ok(svg.startsWith("<svg ") && svg.endsWith("</svg>"));
   // The no-data bin splits the ground into two polygons; the clutter is
-  // one grey polygon over every bin with data and one green run.
+  // one gray polygon over every bin with data and one green run.
   assert.equal((svg.match(/class="ground"/g) || []).length, 2);
   assert.equal((svg.match(/class="surface"/g) || []).length, 2);
   assert.equal((svg.match(/class="veg"/g) || []).length, 1);
@@ -174,7 +174,7 @@ test("viewStep, covers and fetchWindow: the page asks again only for finer or fa
 });
 
 test("fetchWindow: a window around the view at the step it needs, inside the path", () => {
-  // 1000 m at 616 px needs 2 m bins: a 3998 m window centred on the view.
+  // 1000 m at 616 px needs 2 m bins: a 3998 m window centerd on the view.
   let w = fetchWindow([2500, 3500], 6186, 616);
   assert.deepEqual(w, { range: [1001, 4999], samples: 2000 });
   assert.ok(Math.ceil((w.range[1] - w.range[0]) / w.samples) <= 2, "the service's step stays within the view's");

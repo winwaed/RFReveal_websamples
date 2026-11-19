@@ -24,16 +24,16 @@ window.RFREVEAL_CONFIG = {
   // to make the file from OpenStreetMap). Default: buildings.json.
   buildingsUrl: "buildings.json",
   // Length units of the page and of every request it sends: "imperial"
-  // (feet and miles, the service's default) or "metric" (metres and
-  // kilometres). The panel's fields, the popups, the point card and the
+  // (feet and miles, the service's default) or "metric" (meters and
+  // kilometers). The panel's fields, the popups, the point card and the
   // profile follow it; the towers file says its own units (towers.json is
   // metric) and is converted.
   units: "imperial",
-  // Reverse the signal (RSL) colour scale. Off (false, the default): green
+  // Reverse the signal (RSL) color scale. Off (false, the default): green
   // is the strongest signal and red the weakest, at the threshold. On
   // (true): red is the strongest and green the weakest, the order cnHeat
   // uses, so its maps and these read alike. Applies to the patch raster,
-  // the building fill when coloured by signal, the point lines and the
+  // the building fill when colored by signal, the point lines and the
   // key, and the building coverage ramp, which flips with it.
-  reverseSignalColours: false,
+  reverseSignalColors: false,
 };

@@ -14,11 +14,11 @@
 //   radios[]       { azimuth_deg, name?, id?, ...any per-radio field }
 //                  id defaults to "<tower id>-<azimuth>".
 //
-// units: "metric" (the default: metres and kilometres) or "imperial" (feet
+// units: "metric" (the default: meters and kilometers) or "imperial" (feet
 // and miles) says what the file's heights, apclearance and ranges are in;
 // the page converts them to its own units setting (units.js).
 
-import { normaliseUnits } from "./units.js";
+import { normalizeUnits } from "./units.js";
 
 const MOUNT = ["height", "height_rooftop"];
 
@@ -29,7 +29,7 @@ export function expandTowers(doc) {
   if (!doc || !Array.isArray(doc.towers) || doc.towers.length === 0) {
     throw new Error("towers.json needs a non-empty towers array");
   }
-  const units = normaliseUnits(doc.units ?? "metric");
+  const units = normalizeUnits(doc.units ?? "metric");
   const defaults = doc.radio_defaults || {};
   const ids = new Set();
   const towers = doc.towers.map((t, ti) => {

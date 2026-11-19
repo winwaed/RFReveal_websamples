@@ -15,7 +15,7 @@
         <label><input type="radio" name="mode" value="buildings"> Buildings</label>
       </div>
       <p class="hint" data-mode="patch">Click the map to evaluate a patch at that point using the ticked towers. The result opens in a popup at the point, and each patch's raster stays on the map with a circle at the patch radius.</p>
-      <p class="hint" data-mode="buildings">Evaluate buildings colours every building footprint around the ticked towers, or inside a window you draw, by its coverage; click a building for its figures.</p>
+      <p class="hint" data-mode="buildings">Evaluate buildings colors every building footprint around the ticked towers, or inside a window you draw, by its coverage; click a building for its figures.</p>
       <p class="hint">Right-click anywhere for the signal from each ticked tower to that point and the bearing to it: lines are drawn to the towers and a card lists the figures. Drag the card out of the way; its Hide button or the next right-click removes it.</p>
       <p class="hint" id="extent">Loading the elevation extent…</p>
       <p data-mode="patch"><button id="clear" type="button" disabled>Clear rasters</button></p>
@@ -48,13 +48,13 @@
           <option value="window">in a window drawn on the map</option>
         </select></label>
         <label class="field" id="buildingRadiusField"><span>Radius around towers (<span data-unit="length">m</span>)</span><input id="buildingRadius" type="number" value="1000" min="50" max="3000" step="50"></label>
-        <p class="hint" id="windowHint" hidden>Press Draw window, then drag on the map with the left mouse button; or hold Shift and drag at any time. The map pans, zooms and answers right clicks as usual; Esc cancels a drag, and a new window replaces the old. Evaluate buildings sends every building whose centre is inside it to the ticked towers.</p>
+        <p class="hint" id="windowHint" hidden>Press Draw window, then drag on the map with the left mouse button; or hold Shift and drag at any time. The map pans, zooms and answers right clicks as usual; Esc cancels a drag, and a new window replaces the old. Evaluate buildings sends every building whose center is inside it to the ticked towers.</p>
         <p class="buttons" id="windowButtons" hidden>
           <button id="drawWindow" type="button">Draw window</button>
           <button id="removeWindow" type="button" disabled>Remove window</button>
         </p>
         <p id="windowInfo" class="status" hidden></p>
-        <label class="field"><span>Colour by</span><select id="colourBy">
+        <label class="field"><span>Color by</span><select id="colorBy">
           <option value="coverage" selected>coverage %</option>
           <option value="signal">3rd strongest cell (dBm)</option>
         </select></label>
@@ -78,7 +78,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.23 · <button id="aboutOpen" class="link" type="button">About and data credits</button></p>
+      <p class="version">rfreveal-map sample 0.8.24 · <button id="aboutOpen" class="link" type="button">About and data credits</button></p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -91,10 +91,10 @@
           <p><b id="profileTitle"></b> <span id="profileStatus" class="status"></span></p>
           <span class="drawer-tools">
             <span id="profileRange" class="muted"></span>
-            <button id="profilePanLeft" type="button" title="Pan towards the AP (or drag the chart)">&#9664;</button>
+            <button id="profilePanLeft" type="button" title="Pan toward the AP (or drag the chart)">&#9664;</button>
             <button id="profileZoomOut" type="button" title="Zoom out (or wheel)">&minus;</button>
             <button id="profileZoomIn" type="button" title="Zoom in (or wheel)">+</button>
-            <button id="profilePanRight" type="button" title="Pan towards the point (or drag the chart)">&#9654;</button>
+            <button id="profilePanRight" type="button" title="Pan toward the point (or drag the chart)">&#9654;</button>
             <button id="profileFull" type="button" title="Show the whole path (or double click)">Full</button>
             <button id="profileClose" type="button" class="hide" title="Close the profile">Close</button>
           </span>
@@ -127,7 +127,7 @@
     <button id="debugToggle" type="button" class="debug-toggle" aria-pressed="false" title="Show the last request sent to the service and its reply">Debug</button>
   </div>
 
-  <!-- geotiff.js, vendored from npm (licence alongside), decodes the raster. -->
+  <!-- geotiff.js, vendored from npm (license alongside), decodes the raster. -->
   <script src="vendor/geotiff-2.1.3.js"></script>
   <!-- Settings (config.js, committed with an empty key), then your own
        overrides (config.local.js, not committed; optional). -->
@@ -142,19 +142,19 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.23",
-      "./building.js": "./building.js?v=0.8.23",
-      "./towers.js": "./towers.js?v=0.8.23",
-      "./point.js": "./point.js?v=0.8.23",
-      "./debug.js": "./debug.js?v=0.8.23",
-      "./extent.js": "./extent.js?v=0.8.23",
-      "./profile.js": "./profile.js?v=0.8.23"
+      "./patch.js": "./patch.js?v=0.8.24",
+      "./building.js": "./building.js?v=0.8.24",
+      "./towers.js": "./towers.js?v=0.8.24",
+      "./point.js": "./point.js?v=0.8.24",
+      "./debug.js": "./debug.js?v=0.8.24",
+      "./extent.js": "./extent.js?v=0.8.24",
+      "./profile.js": "./profile.js?v=0.8.24"
     }
   }
   </script>
   <dialog id="about" aria-labelledby="aboutTitle">
     <h2 id="aboutTitle">About this demo</h2>
-    <p><strong>rfreveal-map</strong>, sample 0.8.23: an open-source web page that shows what the
+    <p><strong>rfreveal-map</strong>, sample 0.8.24: an open-source web page that shows what the
       RF Reveal service computes. <span id="aboutService">Service: not reached yet.</span></p>
     <h3>Data credits</h3>
     <ul>
@@ -165,7 +165,7 @@
         <a href="https://github.com/microsoft/GlobalMLBuildingFootprints" target="_blank" rel="noopener">Microsoft Global ML Building Footprints</a>,
         under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">Open Database License (ODbL) 1.0</a>;
         building names, types and levels © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL 1.0.
-        The footprints file is a derived database under the same licence.</li>
+        The footprints file is a derived database under the same license.</li>
       <li><strong>Map imagery, roads and places</strong>: Google Maps Platform, under Google's terms
         (its own attribution is on the map).</li>
       <li><strong>Towers and radios</strong>: fictional sample sites in <code>towers.json</code>, not a real network.</li>
@@ -176,12 +176,12 @@
         BSD 3-Clause License, © 2026 Winwaed Software Technology LLC
         (<a href="https://github.com/winwaed/RFReveal_websamples/blob/main/LICENSE" target="_blank" rel="noopener">LICENSE</a>,
         <a href="https://github.com/winwaed/RFReveal_websamples/blob/main/NOTICE" target="_blank" rel="noopener">NOTICE</a>).
-        The demo is open source; the RF Reveal service it talks to is commercial software, and "RF Reveal" is a product name the licence does not grant.</li>
+        The demo is open source; the RF Reveal service it talks to is commercial software, and "RF Reveal" is a product name the license does not grant.</li>
       <li>geotiff.js, MIT License, © 2015 EOX IT Services GmbH (<code>vendor/</code>).</li>
       <li>Propagation in the service follows ITU-R recommendations (P.526, P.833, P.676, P.835, P.838); the service's own NOTICE lists its third-party components.</li>
     </ul>
     <p class="buttons"><button id="aboutClose" type="button">Close</button></p>
   </dialog>
-  <script type="module" src="app.js?v=0.8.23"></script>
+  <script type="module" src="app.js?v=0.8.24"></script>
 </body>
 </html>

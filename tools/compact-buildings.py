@@ -24,7 +24,7 @@ def centroid(ring):
 
 
 def distance_m(lon1, lat1, lon2, lat2):
-    # Equirectangular approximation: fine for a few kilometres.
+    # Equirectangular approximation: fine for a few kilometers.
     r = 6371000.0
     x = math.radians(lon2 - lon1) * math.cos(math.radians((lat1 + lat2) / 2))
     y = math.radians(lat2 - lat1)

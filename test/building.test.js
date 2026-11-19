@@ -2,11 +2,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, checkBuildings, coverageColor, distanceM, hilbertIndex, mercator, normaliseWindow, ringCentroid, selectInWindow, selectWithin, toFeature, windowSizeM } =
+const { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, checkBuildings, coverageColor, distanceM, hilbertIndex, mercator, normalizeWindow, ringCentroid, selectInWindow, selectWithin, toFeature, windowSizeM } =
   await import("../building.js");
-const { setSignalColourReversed } = await import("../patch.js");
+const { setSignalColorReversed } = await import("../patch.js");
 
-// A square footprint of side m metres (roughly) at (lat, lon).
+// A square footprint of side m meters (roughly) at (lat, lon).
 function square(id, lat, lon, m = 20, extra = {}) {
   const dlat = m / 111320;
   const dlon = m / (111320 * Math.cos((lat * Math.PI) / 180));
@@ -45,7 +45,7 @@ test("mercator matches PROJ control points", () => {
   assert.ok(Math.abs(p.x + 10964235.1345) < 0.01 && Math.abs(p.y - 4017219.9227) < 0.01, JSON.stringify(p));
 });
 
-test("batches groups neighbours and respects the maximum", () => {
+test("batches groups neighbors and respects the maximum", () => {
   const b = checkBuildings([
     square("a", 33.9000, -98.5000), square("b", 33.9001, -98.5001), // same 200 m square
     square("c", 33.9100, -98.5000), // 1.1 km north
@@ -55,7 +55,7 @@ test("batches groups neighbours and respects the maximum", () => {
   assert.equal(one.length, 1);
   // Along the Hilbert curve from the south-west square: a and b (the same
   // square, in input order) first; the curve then climbs the western
-  // column before crossing east, so c (a kilometre north) precedes d
+  // column before crossing east, so c (a kilometer north) precedes d
   // (920 m east).
   assert.deepEqual(one[0].map((x) => x.id), ["a", "b", "c", "d"]);
   const two = batches(b, { max: 3 });
@@ -139,7 +139,7 @@ test("toFeature wraps the rings as a GeoJSON Feature", () => {
   assert.equal(f.geometry.coordinates[0].length, 5);
 });
 
-test("colours: coverage runs grey, red to green; signal uses the signal ramp", () => {
+test("colors: coverage runs gray, red to green; signal uses the signal ramp", () => {
   assert.deepEqual(coverageColor(0), [158, 158, 158]);
   const [r1, g1] = coverageColor(5);
   const [r2, g2] = coverageColor(100);
@@ -153,23 +153,23 @@ test("colours: coverage runs grey, red to green; signal uses the signal ramp", (
   assert.deepEqual(buildingColor(null), [120, 120, 120]);
 });
 
-test("colours: the reversed scale flips coverage and signal fills, not the greys", () => {
+test("colors: the reversed scale flips coverage and signal fills, not the grays", () => {
   const little = coverageColor(5);
   const full = coverageColor(100);
   const normal75 = coverageColor(75);
-  setSignalColourReversed(true);
+  setSignalColorReversed(true);
   try {
-    assert.deepEqual(coverageColor(0), [158, 158, 158], "no coverage stays grey");
+    assert.deepEqual(coverageColor(0), [158, 158, 158], "no coverage stays gray");
     const [r1, g1] = coverageColor(5);
     const [r2, g2] = coverageColor(100);
     assert.ok(g1 > r1, "little coverage is green");
     assert.ok(r2 > g2, "full coverage is red");
-    assert.deepEqual(coverageColor(25), normal75, "25 % takes the normal ramp's 75 % colour");
+    assert.deepEqual(coverageColor(25), normal75, "25 % takes the normal ramp's 75 % color");
     const [rs, gs] = buildingColor({ combined: { coverage_pct: 40, signal_dbm: -50 } }, { by: "signal" });
     assert.ok(rs > gs, "a strong signal is red");
     assert.deepEqual(buildingColor({ skipped: "no_cells" }), [120, 120, 120]);
   } finally {
-    setSignalColourReversed(false);
+    setSignalColorReversed(false);
   }
   assert.deepEqual(coverageColor(5), little);
   assert.deepEqual(coverageColor(100), full);
@@ -196,8 +196,8 @@ test("bestRadiosPerTower picks one radio per tower", () => {
   assert.equal(rows[0].radio.name, "S");
 });
 
-test("normaliseWindow, selectInWindow and windowSizeM", () => {
-  const w = normaliseWindow({ lat: 33.95, lon: -98.50 }, { lat: 33.90, lon: -98.55 });
+test("normalizeWindow, selectInWindow and windowSizeM", () => {
+  const w = normalizeWindow({ lat: 33.95, lon: -98.50 }, { lat: 33.90, lon: -98.55 });
   assert.deepEqual(w, { south: 33.9, north: 33.95, west: -98.55, east: -98.5 });
   const mk = (id, lat, lon) => ({ id, centroid: { lat, lon } });
   const b = [mk("in", 33.92, -98.52), mk("edge", 33.95, -98.55), mk("north", 33.951, -98.52), mk("east", 33.92, -98.49)];
