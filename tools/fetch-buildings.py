@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Build the page's buildings.json from the Microsoft Building Footprints
-(the GlobalMLBuildingFootprints release, ODbL), which cover houses that
-OpenStreetMap has not mapped in the study area.
+"""Build the page's buildings.json: the footprints come from the Microsoft
+Building Footprints (the GlobalMLBuildingFootprints release, ODbL), which
+cover houses that OpenStreetMap has not mapped, and the names, building
+types and levels from an OpenStreetMap file when one is given (--osm).
 
 The release is tiled by Bing quadkey (level 9) and indexed in
 dataset-links.csv; this tool downloads the index and the UnitedStates
@@ -21,9 +22,9 @@ centroid, so the popups keep their names. Standard library only; the
 downloads go to RAWDIR and are reused when present. Run it with
 python3 -I, as the data is downloaded.
 
-    fetch-ms-buildings.py RAWDIR TOWERS_JSON OUT_JSON [--distance-km 6]
+    fetch-buildings.py RAWDIR TOWERS_JSON OUT_JSON [--distance-km 6]
         [--bbox S W N E] [--osm osm-buildings.json]
-    fetch-ms-buildings.py RAWDIR TOWERS_JSON OUT_JSON --extent http://localhost:8080
+    fetch-buildings.py RAWDIR TOWERS_JSON OUT_JSON --extent http://localhost:8080
         [--osm osm-buildings.json]
 """
 import argparse

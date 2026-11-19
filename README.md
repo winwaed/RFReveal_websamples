@@ -99,15 +99,17 @@ file server (Python 3 is enough).
 
 ### Your towers
 
-`towers.json` is fetched at start, so the towers change without touching
-any script (`config.js` can point `towersUrl` at another file). It gives
-its `units` (`"metric"`, the sample's, or `"imperial"`: what its heights,
-`apclearance` and ranges are in; the page converts them to the `units` of
-`config.js`), the map centre, `radio_defaults` that every radio inherits unless it
-sets its own, and the towers:
+`towers.json` is fetched at the start, so the towers can be changed without
+touching any of the scripts (`config.js` can point `towersUrl` at another file). It specifies the `units` (`"metric"` or `"imperial"`) for towers information.
+The units can be different to the display units in `config.js`.
+The units cover the ranges, `apclearance`, and heights.
+
+The `towers.json` file also specifies the map centre, `radio_defaults`
+defaults for each radio), and the actual tower definitions:
 
 ```json
 {
+  "units" : "metric",
   "map_center": { "lat": 33.9137, "lon": -98.4934 },
   "radio_defaults": { "antenna": "cn-450-micropop-sector-antenna-5g", "frequency_ghz": 5.8,
                       "tilt_deg": -2, "tx_power_dbm": 18, "apclearance": 30, "range": 20 },
@@ -138,7 +140,7 @@ absorption alone costs about 15 dB/km there.
 
 The Buildings mode needs `buildings.json`, a compact file of footprints
 (`config.js` can point `buildingsUrl` elsewhere). The demo does not ship
-one: `tools/fetch-ms-buildings.py` builds it from the **Microsoft Global
+one: `tools/fetch-buildings.py` builds it from the **Microsoft Global
 ML Building Footprints** release (Open Database License), keeping every
 footprint inside your service's elevation extent and carrying over the
 names, building types and levels of OpenStreetMap footprints where they
@@ -146,7 +148,7 @@ exist. Standard library only; run it with `python3 -I` since it
 downloads data:
 
 ```bash
-python3 -I tools/fetch-ms-buildings.py /path/to/raw towers.json buildings.json \
+python3 -I tools/fetch-buildings.py /path/to/raw towers.json buildings.json \
     --extent http://localhost:8080            # reads GET /api/v1/extent from the service
 # optional: --osm osm-buildings.json  (names from an OpenStreetMap file, below)
 # alternative: --distance-km 6       (footprints within 6 km of the towers instead)
@@ -376,10 +378,10 @@ links (Credits, above).
 
 The sample version is in the page footer and in every module URL.
 
-- **0.8.23** (2026-11-19): metric and imperial units (`units` in `config.js`, `units` in the towers file).
+- **0.8.23** (2026-11-19): metric and imperial units (`units` in `config.js`, `units` in the towers file); `tools/fetch-ms-buildings.py` renamed `fetch-buildings.py`.
 - **0.8.22** (2026-11-19): README rewritten for three audiences.
 - **0.8.21** (2026-11-18): on-map data credit line and the About dialog.
-- **0.8.20** (2026-11-18): `fetch-ms-buildings.py --extent` keeps the
+- **0.8.20** (2026-11-18): `fetch-buildings.py --extent` keeps the
   footprints inside the service's elevation extent.
 - **0.8.19** (2026-11-16): window selection drawn on a transient layer
   (Draw window or Shift + drag, Esc cancels, Remove window), so the map's
