@@ -140,12 +140,12 @@ absorption alone costs about 15 dB/km there.
 
 The Buildings mode needs `buildings.json`, a compact file of footprints
 (`config.js` can point `buildingsUrl` elsewhere). The demo does not ship
-one: `tools/fetch-buildings.py` builds it from the **Microsoft Global
-ML Building Footprints** release (Open Database License), keeping every
-footprint inside your service's elevation extent and carrying over the
-names, building types and levels of OpenStreetMap footprints where they
-exist. Standard library only; run it with `python3 -I` since it
-downloads data:
+with one, but you can use `tools/fetch-buildings.py` to create a file from
+the **Microsoft Global ML Building Footprints** release (Open Database
+License). This fetches all building footprints within your elevation extents.
+It can also optionally download OpenStreetMap footprints.
+
+This script only requires the standard Python library. Run it with `python3 -I` since it downloads data:
 
 ```bash
 python3 -I tools/fetch-buildings.py /path/to/raw towers.json buildings.json \
@@ -158,23 +158,17 @@ The release is tiled by Bing quadkey; the tool downloads the index and
 the tiles covering the extent into `/path/to/raw` (reused when present)
 and writes an array of `{ id, building, rings, height_m?, name?, levels? }`
 with six-decimal `[lon, lat]` positions, the first ring the outer one and
-the rest holes. The whole 3,240 km² Wichita Falls extent gives 76,759
-footprints (17 MB), which the page loads in about a second.
+the rest holes. As a guide, the whole 3,240 km² Wichita Falls extent gives
+76,759 footprints (17 MB), which the page loads in about a second.
 
-Two other routes: `tools/fetch-osm-buildings.sh DIR` asks the Overpass
-API for OpenStreetMap's buildings in a box (retrying with backoff, as its
-policy asks) and converts them with `ogr2ogr`; `tools/compact-buildings.py`
-turns any GeoJSON polygons with an id into the same compact file. Any
-footprint source of your own works in that shape (`building.js`
-documents it).
-
-Both sources are under the ODbL, which requires their credit where the
+Both Microsoft Buildings and OpenStreetMaps are licensed under the ODbL,
+which requires their credit where the
 map is shown: the page carries it (see **Credits** below). If you use a
 different source, change the credit.
 
 ### Serving it to your team
 
-The page is static files: put the directory on any web server and set
+The page consists of static files: put the directory on any web server and set
 `apiBase` in `config.local.js` to where the service is reachable. The
 service itself has no authentication or TLS; reach it on your internal
 network or through a reverse proxy that adds both (the deployment guide
@@ -198,7 +192,7 @@ and the dialog in `index.html`.
 
 ### Layout of the code
 
-Every module except `app.js` is pure functions, testable in Node without
+Every module except `app.js` contains pure functions, testable in Node without
 a browser; `app.js` holds the page state and the Google Maps calls.
 
 - `index.html`, `styles.css`: the page, the About dialog, the import map
@@ -260,18 +254,20 @@ Mercator GeoTIFF, which needs no reprojection on a Google map.
 
 ### Patches
 
-A click asks for the patch at that point from the ticked towers: a
-square of the radius in the panel (default 20 m, up to 100 m), each 1 m
-cell holding the strongest signal at or above the minimum (default
-−80 dBm), decoded in the browser and drawn over the map with a white
-circle at the patch radius. Patches stay until **Clear rasters**. Where
-patches overlap, each pixel shows the strongest of them, drawn once.
+Left click performs a query of the selected towers to produce a patch
+centred on the click point. Options include patch radius and minimum signal.
+
+The patch RSL is drawn over the map with a white circle at the patch radius.
+Colors vary from green (strongest signal) to red (weakest). Hatching shows an
+NLOS (non-line-of-sight) connection.
+
+Press the **Clear rasters* to clear all of the current displayed patches.
+
 Water cells are transparent, and so are tree cells (vegetation over 1 m,
 where no receiver can be mounted) unless the receiver above ground is
-reached under the canopy by a non-line-of-sight path; the popup's cell
-count says how many trees there were. The popup, anchored to the top
-edge of the patch, gives the summary and each tower's best covering
-radio; the panel lists every radio with coverage.
+reachable under the canopy by a non-line-of-sight path. The popup window
+gives summary coverage information, including the number of pixels
+marked as trees.
 
 **Options** apply to every mode. *Receiver above ground* and *above
 rooftop* are the two candidate heights of a patch (a roof-mounted
@@ -360,12 +356,12 @@ line names the dataset, its area and tile count.
 
 The **Debug** button opens a pane down the right side with the last
 request and reply, pretty printed, with a summary line (route, HTTP
-status, time, bytes, the service's request id). Long strings, in practice
-the base64 raster, are shortened unless you untick the box; **Copy**
+status, time, bytes, the service's request id). Long strings (i.e. the
+base64 GeoTIFF) are shortened unless you untick the box; **Copy**
 puts the full JSON on the clipboard. **Save request + reply** writes the
 exchange as `rfreveal-request-<request id>.json`; **Diagnostics report**
-downloads the service's `GET /api/v1/diagnostics` zip. Both are what to
-attach to a support message.
+downloads the service's `GET /api/v1/diagnostics` zip. Both can be included
+in support requests.
 
 ### Credits and About
 
