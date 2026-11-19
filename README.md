@@ -1,17 +1,18 @@
 # rfreveal-map
 
-The web demo for [RF Reveal](https://rfreveal.com/): a single HTML page
-that puts your towers on a Google map and asks the RF Reveal service what
-they cover. Click the map for a coverage **patch** drawn over the imagery,
+rfreveal-map is the web demo for [RF Reveal](https://rfreveal.com/), and
+consists of a single HTML page that puts your towers on a Google map and
+asks the RF Reveal service what they cover. Click the map for a coverage
+**patch** drawn over the imagery,
 switch to **Buildings** to colour every footprint in an area by its
-coverage, right-click anywhere for a **point** link budget with a **path
-profile** from each tower. No build step, no npm: plain HTML, CSS and ES
-modules, one vendored library (geotiff.js), and two data files you can
-replace with your own.
+coverage, or right-click anywhere for a **point** link budget with a **path
+profile** from each tower. There is no no build step or npm, and only uses
+plain HTML, CSS and ES modules with one vendored library (geotiff.js), and
+two data files that you can replace with your own.
 
 The page is open source under the BSD 3-Clause License. The RF Reveal
 service it talks to is commercial software that runs in Docker on your
-own machine with the elevation data you licensed; "RF Reveal" is a
+own machine with the elevation data that you licensed; "RF Reveal" is a
 product name the licence does not grant. Everything the demo shows is
 computed by the service: the page only draws it.
 
@@ -26,12 +27,13 @@ computed by the service: the page only draws it.
 
 ## Try it
 
-You need the RF Reveal service running with an elevation dataset
+First you will need the RF Reveal service running with an elevation dataset
 (Docker is the only prerequisite; your delivery README has the `docker
 run` line), a Google Maps JavaScript API key of your own, and any static
 file server (Python 3 is enough).
 
-1. **Start the service, allowing this page's origin.** The service sends
+1. **Start the RF Reveal service, allowing this page's origin.** The
+   service sends
    no CORS headers unless asked, and a browser blocks the page's requests
    without them:
 
@@ -43,8 +45,12 @@ file server (Python 3 is enough).
      rfreveald:<version>
    ```
 
+   RFREVEAL_CORS_ORIGIN allows calls from the specified origin. This allows
+   rfreveal-map (localhost, port 8000) to access RF Reveal's webservice.
+
 2. **Add your Google Maps key.** `config.js` is committed with an empty
-   key. Put yours in `config.local.js`, which `.gitignore` keeps out of
+   key. Put your Google Maps key in `config.local.js`, which `.gitignore`
+   keeps out of
    version control and which overrides `config.js`:
 
    ```bash
@@ -57,9 +63,13 @@ file server (Python 3 is enough).
    page needs their own key from the Google Cloud console and accepts the
    [Google Maps Platform Terms of Service](https://cloud.google.com/maps-platform/terms)
    and its billing (the Maps JavaScript API has a free monthly allowance;
-   restrict the key to your site's address). Never commit a real key.
+   restrict the key to your site's address).
 
-3. **Serve the directory and open it.** The page is ES modules, so it
+3. **Set towers.json** This specifies your tower and AP information.
+   The sample gives four towers in the Wichita Falls (Texas) area.
+   See below for more information.
+
+4. **Serve the directory and open it.** The page contains ES modules, so it
    must come from an `http://` URL, not `file://`:
 
    ```bash
@@ -72,11 +82,9 @@ file server (Python 3 is enough).
    long as `RFREVEAL_CORS_ORIGIN` names it.
 
 4. **Look around.** The sample `towers.json` holds four fictional sites in
-   Wichita Falls, Texas, the area of the development dataset; the map
-   is shaded outside whatever dataset your service has loaded, and the
-   hint line under the mode switch names it. With the sample towers over
-   your own dataset you will see only the shading: replace them with your
-   own (next section). Then:
+   Wichita Falls, Texas. The map will be shaded outside your elevation data.
+   With the sample towers over your own dataset you will see only the
+   shading: replace them with your own (next section). Then:
 
    - **Click** the map: a coverage patch at that point from the ticked
      towers, with a popup of the figures.
