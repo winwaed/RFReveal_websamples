@@ -51,4 +51,5 @@ test("extentSummary", () => {
   assert.equal(extentSummary(feature), "wichitafalls, 810 km², 810 tiles, 2 islands, 1 hole");
   assert.equal(extentSummary({ properties: { name: "x", area_km2: 1, tiles: 1, islands: 1, holes: 0 } }), "x, 1 km², 1 tiles");
   assert.equal(extentSummary(null), "");
+  assert.equal(extentSummary(feature, "imperial"), "wichitafalls, 313 mi², 810 tiles, 2 islands, 1 hole");
 });

@@ -3,6 +3,7 @@
 // mask over everything outside it. Pure functions apart from
 // fetchExtent, so they are testable in Node (see test/extent.test.js).
 
+import { areaUnit, km2ToArea } from "./units.js";
 import { fetchJSON } from "./patch.js";
 
 // fetchExtent GETs the feature.
@@ -36,11 +37,11 @@ export function maskPaths(feature) {
 
 // extentSummary describes the feature for the panel: the dataset, its
 // area and how many islands and holes it has.
-export function extentSummary(feature) {
+export function extentSummary(feature, units = "metric") {
   const p = (feature && feature.properties) || {};
   const parts = [];
   if (p.name) parts.push(p.name);
-  if (p.area_km2 != null) parts.push(`${Math.round(p.area_km2)} km²`);
+  if (p.area_km2 != null) parts.push(`${Math.round(km2ToArea(p.area_km2, units))} ${areaUnit(units)}`);
   if (p.tiles != null) parts.push(`${p.tiles} tiles`);
   if (p.islands > 1) parts.push(`${p.islands} islands`);
   if (p.holes > 0) parts.push(`${p.holes} hole${p.holes === 1 ? "" : "s"}`);

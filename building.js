@@ -146,9 +146,9 @@ export function hilbertIndex(n, x, y) {
 // (patch.js pathFlags; docs/building-plan.md 1.3). The service's cell
 // raster option (docs/building-api.md 4.5) is not requested: the sample
 // shows the figures only.
-export function buildBuildingRequest({ buildings, towers, aboveSurface, minSignalDbm, signalRank = 3, atmosphere = "none", detail = "radios", enableLOS = true, enableNLOS = true, rxClearance = 0 }) {
+export function buildBuildingRequest({ buildings, towers, aboveSurface, minSignalDbm, signalRank = 3, atmosphere = "none", detail = "radios", enableLOS = true, enableNLOS = true, rxClearance = 0, units = "metric" }) {
   const req = {
-    units: "metric",
+    units,
     min_signal_dbm: minSignalDbm,
     signal_rank: signalRank,
     rx_height: { above_surface: aboveSurface },

@@ -5,18 +5,19 @@
 // functions apart from fetchPoint, so they are testable in Node (see
 // test/point.test.js).
 
+import { lengthUnit } from "./units.js";
 import { fetchJSON, pathFlags, signalColor } from "./patch.js";
 
 // buildPointRequest assembles a POST /api/v1/point body for the point at
 // (lat, lon) using the enabled towers: the patch request without the
-// patch (no radius). Heights are metres; a height that is not positive is
+// patch (no radius). Heights are in the request's units; a height that is not positive is
 // left out (the service needs at least one).
-export function buildPointRequest({ lat, lon, towers, aboveGround = 0, aboveSurface = 0, minSignalDbm, atmosphere = "none", enableLOS = true, enableNLOS = true, rxClearance = 0 }) {
+export function buildPointRequest({ lat, lon, towers, aboveGround = 0, aboveSurface = 0, minSignalDbm, atmosphere = "none", enableLOS = true, enableNLOS = true, rxClearance = 0, units = "metric" }) {
   const rx = {};
   if (aboveGround > 0) rx.above_ground = aboveGround;
   if (aboveSurface > 0) rx.above_surface = aboveSurface;
   const req = {
-    units: "metric",
+    units,
     location: { lat, lon },
     min_signal_dbm: minSignalDbm,
     rx_height: rx,
@@ -92,8 +93,9 @@ export function degrees(v) {
 // heights).
 export function heightText(request) {
   const rx = request.rx_height || {};
+  const u = lengthUnit(request.units || "metric");
   const parts = [];
-  if (rx.above_ground) parts.push(`${rx.above_ground} m above ground`);
-  if (rx.above_surface) parts.push(`${rx.above_surface} m above the surface`);
+  if (rx.above_ground) parts.push(`${rx.above_ground} ${u} above ground`);
+  if (rx.above_surface) parts.push(`${rx.above_surface} ${u} above the surface`);
   return parts.join(" or ");
 }

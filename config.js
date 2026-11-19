@@ -23,6 +23,12 @@ window.RFREVEAL_CONFIG = {
   // The building footprints (see building.js for the shape, tools/ for how
   // to make the file from OpenStreetMap). Default: buildings.json.
   buildingsUrl: "buildings.json",
+  // Length units of the page and of every request it sends: "imperial"
+  // (feet and miles, the service's default) or "metric" (metres and
+  // kilometres). The panel's fields, the popups, the point card and the
+  // profile follow it; the towers file says its own units (towers.json is
+  // metric) and is converted.
+  units: "imperial",
   // Reverse the signal (RSL) colour scale. Off (false, the default): green
   // is the strongest signal and red the weakest, at the threshold. On
   // (true): red is the strongest and green the weakest, the order cnHeat

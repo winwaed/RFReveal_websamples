@@ -23,6 +23,7 @@
 import { buildRequest, decodeRaster, fetchPatch, flagsValid, maskUnder, mergeStrongest, rasterToDataURL, setSignalColourReversed, signalColor } from "./patch.js";
 import { batches, bestRadiosPerTower, buildBuildingRequest, buildingColor, coverageColor, fetchBuildings, loadBuildings, normaliseWindow, selectInWindow, selectWithin, toFeature, windowSizeM } from "./building.js";
 import { loadTowers } from "./towers.js";
+import { FIELDS, convertTowers, distanceUnit, kmToDistance, lengthUnit, normaliseUnits, toMetres, unitsName } from "./units.js";
 import { buildPointRequest, degrees, fetchPoint, heightText, lineStyle, rgb, towerRows } from "./point.js";
 import { exchangeSummary, prettyJSON, savedExchange, savedExchangeName } from "./debug.js";
 import { binAt, buildProfileRequest, chartLayout, chartSVG, covers as viewCovered, fetchProfile, fetchWindow, panRange, profileCaption, profileTitle, readout, unitLabel, viewOf, zoomRange } from "./profile.js";
@@ -30,8 +31,11 @@ import { extentSummary, fetchExtent, maskPaths } from "./extent.js";
 
 const config = window.RFREVEAL_CONFIG || {};
 // SAMPLE_VERSION names this page in saved files; keep it with the footer and import map in index.html.
-const SAMPLE_VERSION = "rfreveal-map sample 0.8.22";
+const SAMPLE_VERSION = "rfreveal-map sample 0.8.23";
 const API_BASE = (config.apiBase || "http://localhost:8080").replace(/\/+$/, "");
+// The page's length units (units.js): every request carries them, every
+// figure shown is in them.
+const UNITS = normaliseUnits(config.units);
 const MAP_ID = config.mapId || "DEMO_MAP_ID";
 // The signal colour scale: green strong to red weak, or reversed (red
 // strong to green weak, as cnHeat draws it) when the config says so.
@@ -215,6 +219,22 @@ async function initMap() {
   applyMode();
 }
 
+// --- units ---
+
+// applyUnits labels the panel's length fields in the page's units and
+// gives them their defaults, limits and step for those units (units.js).
+function applyUnits() {
+  $("unitsNote").textContent = `(${unitsName(UNITS)})`;
+  for (const span of document.querySelectorAll("[data-unit=length]")) span.textContent = lengthUnit(UNITS);
+  for (const [id, f] of Object.entries(FIELDS[UNITS])) {
+    const input = $(id);
+    input.min = f.min;
+    input.max = f.max;
+    input.step = f.step;
+    input.value = f.value;
+  }
+}
+
 // --- credits and About ---
 
 // addCreditControl puts the one-line data credit on the map itself (the
@@ -378,7 +398,7 @@ function windowInfo() {
   if (!windowBounds) return show("windowInfo", "");
   const { width, height } = windowSizeM(windowBounds);
   const n = selectInWindow(BUILDINGS, windowBounds).length;
-  show("windowInfo", `window ${(width / 1000).toFixed(2)} × ${(height / 1000).toFixed(2)} km: ${n} building${n === 1 ? "" : "s"}`);
+  show("windowInfo", `window ${kmToDistance(width / 1000, UNITS).toFixed(2)} × ${kmToDistance(height / 1000, UNITS).toFixed(2)} ${distanceUnit(UNITS)}: ${n} building${n === 1 ? "" : "s"}`);
 }
 
 // applySelection shows the controls of the chosen selection and the drawn
@@ -444,16 +464,16 @@ async function evaluate(lat, lon) {
 
   show("status", "Evaluating…");
   try {
-    const reply = await fetchPatch(API_BASE, buildRequest({ lat, lon, towers, ...opts }), { signal: ctl.signal, trace });
+    const reply = await fetchPatch(API_BASE, buildRequest({ lat, lon, towers, ...opts, units: UNITS }), { signal: ctl.signal, trace });
     if (ctl.signal.aborted) return;
     renderResult(reply, { lat, lon });
-    openPopup(reply, { lat, lon }, opts.radius);
+    openPopup(reply, { lat, lon }, toMetres(opts.radius, UNITS));
     if (reply.raster) {
       const decoded = await decodeRaster(reply.raster);
       // The circle marks the patch the service evaluated: its echoed
-      // centre and radius (metres; the request is metric).
+      // centre and radius (in the request's units; the circle wants metres).
       const centre = reply.location || { lat, lon };
-      addPatch(decoded, opts.minSignalDbm, { lat: centre.lat, lon: centre.lon, radiusM: reply.radius ?? opts.radius });
+      addPatch(decoded, opts.minSignalDbm, { lat: centre.lat, lon: centre.lon, radiusM: toMetres(reply.radius ?? opts.radius, UNITS) });
     }
   } catch (e) {
     if (e.name === "AbortError") return;
@@ -548,7 +568,7 @@ async function drawExtent() {
       clickable: false,
       zIndex: 0,
     });
-    $("extent").textContent = `Elevation data: ${extentSummary(feature)}; the map is shaded outside it.`;
+    $("extent").textContent = `Elevation data: ${extentSummary(feature, UNITS)}; the map is shaded outside it.`;
   } catch (e) {
     $("extent").textContent = `Elevation extent unknown: ${e.message}`;
   }
@@ -571,7 +591,7 @@ async function evaluatePoint(lat, lon) {
   hidePoint();
   const ctl = new AbortController();
   pointInFlight = ctl;
-  const request = buildPointRequest({ lat, lon, towers, ...heights, minSignalDbm: opts.minSignalDbm, atmosphere: opts.atmosphere, enableLOS: opts.enableLOS, enableNLOS: opts.enableNLOS, rxClearance: opts.rxClearance });
+  const request = buildPointRequest({ lat, lon, towers, ...heights, minSignalDbm: opts.minSignalDbm, atmosphere: opts.atmosphere, enableLOS: opts.enableLOS, enableNLOS: opts.enableNLOS, rxClearance: opts.rxClearance, units: UNITS });
   show("status", "Evaluating the point…");
   try {
     const reply = await fetchPoint(API_BASE, request, { signal: ctl.signal, trace });
@@ -684,8 +704,9 @@ function pointContent(reply, request, at, rows, { towersOnly }) {
   const box = el("div");
   const cell = reply.cell || {};
   const elev = [];
-  if (cell.ground != null) elev.push(`ground ${cell.ground} m`);
-  if (cell.surface != null) elev.push(`surface ${cell.surface} m`);
+  const u = lengthUnit(reply.units || request.units);
+  if (cell.ground != null) elev.push(`ground ${cell.ground} ${u}`);
+  if (cell.surface != null) elev.push(`surface ${cell.surface} ${u}`);
   if (cell.vegetation) elev.push("tree");
   const head = el("p", {}, el("b", {}, `${at.lat.toFixed(5)}, ${at.lon.toFixed(5)}`), ` · ${elev.join(", ")} · receiver ${heightText(request)} · status ${reply.status}`);
   if (reply.message) head.append(el("span", { className: "warn" }, ` (${reply.message})`));
@@ -696,7 +717,7 @@ function pointContent(reply, request, at, rows, { towersOnly }) {
   } else {
     box.append(el("p", {}, `No radio reaches this point at ${reply.min_signal_dbm} dBm or better.`));
   }
-  const headRow = el("tr", {}, el("th", {}, "Tower"), el("th", {}, "Radio"), el("th", {}, "dBm"), el("th", {}, "Path"), el("th", {}, ""), el("th", {}, "km"), el("th", { title: "bearing from the point to the tower, clockwise from true north" }, "To tower"));
+  const headRow = el("tr", {}, el("th", {}, "Tower"), el("th", {}, "Radio"), el("th", {}, "dBm"), el("th", {}, "Path"), el("th", {}, ""), el("th", {}, distanceUnit(reply.units || request.units)), el("th", { title: "bearing from the point to the tower, clockwise from true north" }, "To tower"));
   if (!towersOnly) headRow.append(el("th", { title: "the point's bearing from the tower minus the radio's azimuth" }, "Off axis"), el("th", { title: "angle from the receiver up to the AP antenna" }, "Elev."));
   const table = el("table", {}, el("thead", {}, headRow));
   const tbody = el("tbody");
@@ -977,7 +998,7 @@ function candidateTitle(r) {
   const parts = [];
   for (const [name, c] of Object.entries(r.candidates || {})) {
     if (!c) continue;
-    let s = `${name.replace("_", " ")} (${c.rx_elevation} m)`;
+    let s = `${name.replace("_", " ")} (${c.rx_elevation} ${lengthUnit(UNITS)})`;
     if (c.signal_dbm != null) s += `: ${c.signal_dbm} dBm ${c.path.toUpperCase()}`;
     if (c.free_space_dbm != null) s += `, free space ${c.free_space_dbm} dBm`;
     if (c.excess_loss_db != null) s += `, excess loss ${c.excess_loss_db} dB`;
@@ -1077,7 +1098,7 @@ function pathsText(reply) {
   const kinds = [];
   if (reply.enable_los) kinds.push("line of sight");
   if (reply.enable_nlos) kinds.push("non-line-of-sight (diffraction, vegetation)");
-  const clearance = reply.enable_nlos && reply.rxclearance != null ? `, receiver clearance ${reply.rxclearance} m` : "";
+  const clearance = reply.enable_nlos && reply.rxclearance != null ? `, receiver clearance ${reply.rxclearance} ${lengthUnit(reply.units || UNITS)}` : "";
   return `Paths: ${kinds.join(" and ")}${clearance}`;
 }
 
@@ -1252,8 +1273,8 @@ async function evaluateBuildings() {
   if (!byWindow && !(opts.buildingRadius > 0)) return show("buildingError", "the radius must be positive");
   if (byWindow && !windowBounds) return show("buildingError", "draw a window first: press Draw window (or hold Shift) and drag on the map");
   if (!checkFlags(opts, "buildingError")) return;
-  const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, opts.buildingRadius);
-  if (selected.length === 0) return show("buildingError", byWindow ? "no buildings in the window" : `no buildings within ${opts.buildingRadius} m of the ticked towers`);
+  const selected = byWindow ? selectInWindow(BUILDINGS, windowBounds) : selectWithin(BUILDINGS, towers, toMetres(opts.buildingRadius, UNITS));
+  if (selected.length === 0) return show("buildingError", byWindow ? "no buildings in the window" : `no buildings within ${opts.buildingRadius} ${lengthUnit(UNITS)} of the ticked towers`);
   clearBuildings();
   const ctl = new AbortController();
   buildingRun = ctl;
@@ -1267,7 +1288,7 @@ async function evaluateBuildings() {
   try {
     for (let k = 0; k < groups.length; k++) {
       show("buildingStatus", `batch ${k + 1} of ${groups.length}: ${groups[k].length} buildings, ${drawn} drawn…`);
-      const req = buildBuildingRequest({ buildings: groups[k], towers, aboveSurface: opts.aboveSurface, minSignalDbm: opts.minSignalDbm, atmosphere: opts.atmosphere, enableLOS: opts.enableLOS, enableNLOS: opts.enableNLOS, rxClearance: opts.rxClearance });
+      const req = buildBuildingRequest({ buildings: groups[k], towers, aboveSurface: opts.aboveSurface, minSignalDbm: opts.minSignalDbm, atmosphere: opts.atmosphere, enableLOS: opts.enableLOS, enableNLOS: opts.enableNLOS, rxClearance: opts.rxClearance, units: UNITS });
       const reply = await fetchBuildings(API_BASE, req, { signal: ctl.signal, trace });
       if (ctl.signal.aborted) return;
       for (const b of reply.buildings) {
@@ -1533,8 +1554,9 @@ async function start() {
   $("removeWindow").addEventListener("click", removeWindow);
   $("stopBuildings").addEventListener("click", stopBuildings);
   $("clearBuildings").addEventListener("click", clearBuildings);
+  applyUnits();
   const loaded = await loadTowers(config.towersUrl || "towers.json");
-  TOWERS = loaded.towers;
+  TOWERS = convertTowers(loaded.towers, loaded.units, UNITS);
   MAP_CENTER = loaded.center;
   for (const t of TOWERS) enabled.add(t.id);
   renderTowerList();

@@ -3,21 +3,21 @@
 // functions apart from fetchPatch, so they are testable in Node (see test/).
 
 // buildRequest assembles a POST /api/v1/patch body for a click at (lat, lon)
-// using the enabled towers. Lengths are metric: metres for heights and the
-// radius, kilometres for ranges.
+// using the enabled towers. Lengths are in the request's units (units.js):
+// feet or metres for heights and the radius, miles or kilometres for ranges.
 // atmosphere is "none" (the default, free-space loss only), "dry" or
 // "wet" (gas loss plus the rain rate exceeded for 95 % or 5 % of rainy
 // time at each tower, see docs/patch-api.md 4.9); none omits options.
 // enableLOS and enableNLOS choose which path types count (docs/patch-api.md
 // 4.10; the service wants the integers 0 and 1, not booleans), and
-// rxClearance (metres) is the receiver clearance of the NLOS profile,
+// rxClearance (in the request's units) is the receiver clearance of the NLOS profile,
 // omitted when not positive so the service default applies.
-export function buildRequest({ lat, lon, towers, radius, aboveGround, aboveSurface, minSignalDbm, atmosphere = "none", enableLOS = true, enableNLOS = true, rxClearance = 0 }) {
+export function buildRequest({ lat, lon, towers, radius, aboveGround, aboveSurface, minSignalDbm, atmosphere = "none", enableLOS = true, enableNLOS = true, rxClearance = 0, units = "metric" }) {
   const rx = {};
   if (aboveGround > 0) rx.above_ground = aboveGround;
   if (aboveSurface > 0) rx.above_surface = aboveSurface;
   const req = {
-    units: "metric",
+    units,
     location: { lat, lon },
     radius,
     min_signal_dbm: minSignalDbm,

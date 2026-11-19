@@ -26,14 +26,14 @@
       </section>
 
       <section>
-        <h2>Options <small>(metric)</small></h2>
-        <label class="field" data-mode="patch"><span>Patch radius (m)</span><input id="radius" type="number" value="20" min="1" max="100"></label>
-        <label class="field" data-mode="patch"><span>Receiver above ground (m)</span><input id="aboveGround" type="number" value="5" min="0" max="60"></label>
-        <label class="field"><span>Receiver above rooftop (m)</span><input id="aboveSurface" type="number" value="2" min="0" max="60"></label>
+        <h2>Options <small id="unitsNote">(metric)</small></h2>
+        <label class="field" data-mode="patch"><span>Patch radius (<span data-unit="length">m</span>)</span><input id="radius" type="number" value="20" min="1" max="100"></label>
+        <label class="field" data-mode="patch"><span>Receiver above ground (<span data-unit="length">m</span>)</span><input id="aboveGround" type="number" value="5" min="0" max="60"></label>
+        <label class="field"><span>Receiver above rooftop (<span data-unit="length">m</span>)</span><input id="aboveSurface" type="number" value="2" min="0" max="60"></label>
         <label class="field"><span>Minimum signal (dBm)</span><input id="minSignalDbm" type="number" value="-80" min="-120" max="-30"></label>
         <label class="row"><input id="enableLOS" type="checkbox" checked> <span>Line of sight</span></label>
         <label class="row"><input id="enableNLOS" type="checkbox" checked> <span>Non-line-of-sight <small>(diffraction, vegetation; not at 28 or 60 GHz)</small></span></label>
-        <label class="field"><span>Receiver clearance (m) <small>NLOS profile</small></span><input id="rxClearance" type="number" value="3" min="1" max="20" step="0.5"></label>
+        <label class="field"><span>Receiver clearance (<span data-unit="length">m</span>) <small>NLOS profile</small></span><input id="rxClearance" type="number" value="3" min="1" max="20" step="0.5"></label>
         <label class="field"><span>Atmosphere</span><select id="atmosphere">
           <option value="none" selected>none (free space)</option>
           <option value="dry">dry (gases, light rain)</option>
@@ -47,7 +47,7 @@
           <option value="radius" selected>around the ticked towers</option>
           <option value="window">in a window drawn on the map</option>
         </select></label>
-        <label class="field" id="buildingRadiusField"><span>Radius around towers (m)</span><input id="buildingRadius" type="number" value="1000" min="50" max="3000" step="50"></label>
+        <label class="field" id="buildingRadiusField"><span>Radius around towers (<span data-unit="length">m</span>)</span><input id="buildingRadius" type="number" value="1000" min="50" max="3000" step="50"></label>
         <p class="hint" id="windowHint" hidden>Press Draw window, then drag on the map with the left mouse button; or hold Shift and drag at any time. The map pans, zooms and answers right clicks as usual; Esc cancels a drag, and a new window replaces the old. Evaluate buildings sends every building whose centre is inside it to the ticked towers.</p>
         <p class="buttons" id="windowButtons" hidden>
           <button id="drawWindow" type="button">Draw window</button>
@@ -78,7 +78,7 @@
         <h2 id="legendTitle">Key</h2>
         <div id="legend" class="swatches"></div>
       </section>
-      <p class="version">rfreveal-map sample 0.8.22 · <button id="aboutOpen" class="link" type="button">About and data credits</button></p>
+      <p class="version">rfreveal-map sample 0.8.23 · <button id="aboutOpen" class="link" type="button">About and data credits</button></p>
     </aside>
     <div class="map-col">
       <div id="map" class="map"></div>
@@ -142,19 +142,19 @@
   <script type="importmap">
   {
     "imports": {
-      "./patch.js": "./patch.js?v=0.8.22",
-      "./building.js": "./building.js?v=0.8.22",
-      "./towers.js": "./towers.js?v=0.8.22",
-      "./point.js": "./point.js?v=0.8.22",
-      "./debug.js": "./debug.js?v=0.8.22",
-      "./extent.js": "./extent.js?v=0.8.22",
-      "./profile.js": "./profile.js?v=0.8.22"
+      "./patch.js": "./patch.js?v=0.8.23",
+      "./building.js": "./building.js?v=0.8.23",
+      "./towers.js": "./towers.js?v=0.8.23",
+      "./point.js": "./point.js?v=0.8.23",
+      "./debug.js": "./debug.js?v=0.8.23",
+      "./extent.js": "./extent.js?v=0.8.23",
+      "./profile.js": "./profile.js?v=0.8.23"
     }
   }
   </script>
   <dialog id="about" aria-labelledby="aboutTitle">
     <h2 id="aboutTitle">About this demo</h2>
-    <p><strong>rfreveal-map</strong>, sample 0.8.22: an open-source web page that shows what the
+    <p><strong>rfreveal-map</strong>, sample 0.8.23: an open-source web page that shows what the
       RF Reveal service computes. <span id="aboutService">Service: not reached yet.</span></p>
     <h3>Data credits</h3>
     <ul>
@@ -182,6 +182,6 @@
     </ul>
     <p class="buttons"><button id="aboutClose" type="button">Close</button></p>
   </dialog>
-  <script type="module" src="app.js?v=0.8.22"></script>
+  <script type="module" src="app.js?v=0.8.23"></script>
 </body>
 </html>

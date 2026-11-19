@@ -101,7 +101,9 @@ file server (Python 3 is enough).
 
 `towers.json` is fetched at start, so the towers change without touching
 any script (`config.js` can point `towersUrl` at another file). It gives
-the map centre, `radio_defaults` that every radio inherits unless it
+its `units` (`"metric"`, the sample's, or `"imperial"`: what its heights,
+`apclearance` and ranges are in; the page converts them to the `units` of
+`config.js`), the map centre, `radio_defaults` that every radio inherits unless it
 sets its own, and the towers:
 
 ```json
@@ -202,7 +204,7 @@ a browser; `app.js` holds the page state and the Google Maps calls.
 - `app.js`: loads the Maps API, places the markers, wires the controls,
   draws patches, footprints, point lines and the profile drawer, runs the
   batch loop and the Debug pane.
-- `patch.js`: the patch request (metric units), `fetchJSON` (used by
+- `patch.js`: the patch request, `fetchJSON` (used by
   every request, with a `trace` callback for the Debug pane), the
   GeoTIFF decode and the raster painting (negated dBm bytes, 255
   transparent, NLOS pixels hatched), the path flags.
@@ -234,6 +236,7 @@ it). Reload with the cache bypassed (Ctrl+Shift+R) after an update.
 | `mapId` | Map ID; `DEMO_MAP_ID` works for development, advanced markers need one. |
 | `apiBase` | Where the service listens (default `http://localhost:8080`). |
 | `towersUrl`, `buildingsUrl` | The data files. |
+| `units` | `"imperial"` (feet and miles, the service's default) or `"metric"` (metres and kilometres): the units of the panel's fields, every request and every figure shown. The towers file declares its own units and is converted. |
 | `reverseSignalColours` | `true` draws red as the strongest signal and green as the weakest, the order cnHeat uses, in every palette and the coverage ramp. |
 
 ### Building your own client
@@ -373,6 +376,7 @@ links (Credits, above).
 
 The sample version is in the page footer and in every module URL.
 
+- **0.8.23** (2026-11-19): metric and imperial units (`units` in `config.js`, `units` in the towers file).
 - **0.8.22** (2026-11-19): README rewritten for three audiences.
 - **0.8.21** (2026-11-18): on-map data credit line and the About dialog.
 - **0.8.20** (2026-11-18): `fetch-ms-buildings.py --extent` keeps the

@@ -4,17 +4,21 @@
 //   map_center     { lat, lon }: where the map opens
 //   radio_defaults fields every radio gets unless it sets its own, e.g.
 //                  antenna, frequency_ghz (or frequency_mhz), tilt_deg,
-//                  tx_power_dbm, apclearance, range (km)
+//                  tx_power_dbm, apclearance, range
 //   towers[]       { id, name, lat, lon, height | height_rooftop, radios[] }
-//                  height is metres above the ground (the DTM),
-//                  height_rooftop metres above the surface (the DSM: the
+//                  height is above the ground (the DTM),
+//                  height_rooftop above the surface (the DSM: the
 //                  roof of whatever stands at the coordinates); a radio may
 //                  give its own instead. Every other field is passed to
 //                  the service as written.
 //   radios[]       { azimuth_deg, name?, id?, ...any per-radio field }
 //                  id defaults to "<tower id>-<azimuth>".
 //
-// Heights are metres and ranges kilometres: the requests use metric units.
+// units: "metric" (the default: metres and kilometres) or "imperial" (feet
+// and miles) says what the file's heights, apclearance and ranges are in;
+// the page converts them to its own units setting (units.js).
+
+import { normaliseUnits } from "./units.js";
 
 const MOUNT = ["height", "height_rooftop"];
 
@@ -25,6 +29,7 @@ export function expandTowers(doc) {
   if (!doc || !Array.isArray(doc.towers) || doc.towers.length === 0) {
     throw new Error("towers.json needs a non-empty towers array");
   }
+  const units = normaliseUnits(doc.units ?? "metric");
   const defaults = doc.radio_defaults || {};
   const ids = new Set();
   const towers = doc.towers.map((t, ti) => {
@@ -57,7 +62,7 @@ export function expandTowers(doc) {
   });
   const c = doc.map_center;
   const center = c && typeof c.lat === "number" && typeof c.lon === "number" ? { lat: c.lat, lng: c.lon } : { lat: towers[0].lat, lng: towers[0].lon };
-  return { towers, center };
+  return { towers, center, units };
 }
 
 // loadTowers fetches and expands towers.json (or another URL).

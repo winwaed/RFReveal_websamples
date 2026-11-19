@@ -102,3 +102,10 @@ test("loadTowers reports HTTP failures, bad JSON and bad files", async () => {
     await assert.rejects(loadTowers(), /Failed to fetch/, "network errors pass through");
   });
 });
+
+test("the file's units are read and checked, metric by default", () => {
+  const doc = { towers: [{ id: "a", name: "A", lat: 1, lon: 2, height: 10, radios: [{ azimuth_deg: 0 }] }] };
+  assert.equal(expandTowers(doc).units, "metric");
+  assert.equal(expandTowers({ ...doc, units: "imperial" }).units, "imperial");
+  assert.throws(() => expandTowers({ ...doc, units: "feet" }), /units must be/);
+});

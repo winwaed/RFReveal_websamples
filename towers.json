@@ -1,4 +1,5 @@
 {
+  "units": "metric",
   "map_center": {
     "lat": 33.9137,
     "lon": -98.4934

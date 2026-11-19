@@ -10,6 +10,7 @@ const towers = [{ id: "t", name: "T", lat: 33.9, lon: -98.5, radios: [{ id: "t-9
 test("buildPointRequest is the patch request without the patch", () => {
   const req = buildPointRequest({ lat: 33.91, lon: -98.49, towers, aboveGround: 5, aboveSurface: 2, minSignalDbm: -80, enableNLOS: false, rxClearance: 4 });
   assert.equal(req.units, "metric");
+  assert.equal(buildPointRequest({ lat: 1, lon: 2, towers: [], minSignalDbm: -80, units: "imperial" }).units, "imperial");
   assert.deepEqual(req.location, { lat: 33.91, lon: -98.49 });
   assert.equal(req.radius, undefined);
   assert.deepEqual(req.rx_height, { above_ground: 5, above_surface: 2 });
@@ -75,4 +76,5 @@ test("formatting helpers", () => {
   assert.equal(degrees(null), "–");
   assert.equal(heightText({ rx_height: { above_ground: 5, above_surface: 2 } }), "5 m above ground or 2 m above the surface");
   assert.equal(heightText({ rx_height: { above_surface: 2 } }), "2 m above the surface");
+  assert.equal(heightText({ units: "imperial", rx_height: { above_ground: 16, above_surface: 6.5 } }), "16 ft above ground or 6.5 ft above the surface");
 });
